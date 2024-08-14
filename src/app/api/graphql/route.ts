@@ -1,18 +1,9 @@
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
+import type { NextRequest } from 'next/server'
+import resolvers from '@/graphql/resolvers'
+import typeDefs from '@/graphql/typeDefs'
 
-
-const resolvers = {
-	Query: {
-		hello: () => 'world',
-	}
-}
-
-const typeDefs = `
-type Query {
-	hello: String
-}
-`;
 
 const server = new ApolloServer({
 	resolvers,
