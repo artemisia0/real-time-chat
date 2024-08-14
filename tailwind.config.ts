@@ -15,6 +15,13 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+	plugins: [
+		require('daisyui'),
+	],
+	daisyui: {
+		themes: ['corporate', 'business'],
+		darkTheme: 'business',
+	}
 };
 export default config;
+
