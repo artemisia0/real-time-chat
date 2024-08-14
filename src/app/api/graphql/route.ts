@@ -10,7 +10,20 @@ const server = new ApolloServer({
 	typeDefs,
 })
 
-const handler = startServerAndCreateNextHandler(server)
+const context = async (req: NextRequest) => {
+	// sessionData should be obtained calling something like a 'getSession' function (server action)
+	return {
+		sessionData: {
+			userRole: '',
+			username: '',
+			signedIn: false,
+		}
+	}
+}
+
+const handler = startServerAndCreateNextHandler<NextRequest>(server, {
+	context
+})
 
 export { handler as GET, handler as POST }
 
