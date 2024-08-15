@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server'
 
 const context = async (req: NextRequest) => {
 	await connectToDB()
+	return {
+	}
 }
 
 export default context
