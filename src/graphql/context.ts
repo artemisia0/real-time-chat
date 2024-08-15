@@ -5,10 +5,6 @@ import type { NextRequest } from 'next/server'
 
 const context = async (req: NextRequest) => {
 	await connectToDB()
-	const sessionData = await getSessionData()
-	return {
-		sessionData
-	}
 }
 
 export default context

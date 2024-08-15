@@ -28,7 +28,7 @@ export async function getSession() {
 }
 
 export async function createSession(sessionData: SessionData) {
-	const session = await getSession()
+	const session = await getSession() as any
 	Object.assign(session, sessionData)
 	await session.save()
 }

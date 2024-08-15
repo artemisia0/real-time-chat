@@ -39,8 +39,6 @@ export async function connectToDB() {
 		console.error(err)
 		await mongoose.disconnect()
 		process.exit(1)
-	} finally {
-		await mongoose.disconnect()
 	}
 }
 
