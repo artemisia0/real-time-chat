@@ -1,22 +1,15 @@
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
-import type { NextRequest } from 'next/server'
 import resolvers from '@/graphql/resolvers'
+import type { NextRequest } from 'next/server'
 import typeDefs from '@/graphql/typeDefs'
-import { getSessionData } from '@/actions/session'
+import context from '@/graphql/context'
 
 
 const server = new ApolloServer({
 	resolvers,
 	typeDefs,
 })
-
-const context = async (req: NextRequest) => {
-	const sessionData = await getSessionData()
-	return {
-		sessionData
-	}
-}
 
 const handler = startServerAndCreateNextHandler<NextRequest>(server, {
 	context
