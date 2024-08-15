@@ -1,13 +1,17 @@
+import ThemeController from '@/components/ThemeController'
+
 
 export default function Page() {
 	return (
 		<div className="drawer sm:drawer-open">
 			<input id="main-drawer" type="checkbox" className="drawer-toggle" />
-			<div className="drawer-content flex flex-col items-center justify-center">
-				<div className="flex w-full justify-between">
-					<label htmlFor="main-drawer" className="m-2 btn btn-md btn-circle btn-ghost drawer-button sm:hidden">
+			<div className="drawer-content p-2">
+				<div className="flex w-full">
+					<label htmlFor="main-drawer" className="btn btn-md btn-circle btn-ghost sm:hidden">
 						<BurgerMenuIcon />
 					</label>
+					<div className="flex w-full" />
+					<ThemeController />
 				</div>
 			</div>
 			<div className="drawer-side">
