@@ -12,6 +12,14 @@ export async function getSessionData(): Promise<SessionData> {
 }
 
 export async function getSession() {
+	if (!process.env.IRON_SESSION_PASSWORD) {
+		console.error('IRON_SESSION_PASSWORD is not set.')
+		process.exit(1)
+	}
+	if (!process.env.IRON_SESSION_COOKIE_NAME) {
+		console.error('IRON_SESSION_COOKIE_NAME is not set.')
+		process.exit(1)
+	}
 	const session = await getIronSession(cookies(), {
 		password: process.env.IRON_SESSION_PASSWORD!,
 		cookieName: process.env.IRON_SESSION_COOKIE_NAME!,

@@ -3,6 +3,7 @@ import { startServerAndCreateNextHandler } from '@as-integrations/next'
 import type { NextRequest } from 'next/server'
 import resolvers from '@/graphql/resolvers'
 import typeDefs from '@/graphql/typeDefs'
+import { getSessionData } from '@/actions/session'
 
 
 const server = new ApolloServer({
@@ -11,13 +12,9 @@ const server = new ApolloServer({
 })
 
 const context = async (req: NextRequest) => {
-	// sessionData should be obtained calling something like a 'getSession' function (server action)
+	const sessionData = await getSessionData()
 	return {
-		sessionData: {
-			userRole: '',
-			username: '',
-			signedIn: false,
-		}
+		sessionData
 	}
 }
 
