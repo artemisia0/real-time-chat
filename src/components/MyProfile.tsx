@@ -30,10 +30,14 @@ function SignUpIcon() {
 
 function SignIn() {
 	const onSignIn = () => {
+		if (document != null) {
+			const validDocument = document as any
+			validDocument.getElementById('sign-in-modal').showModal()
+		}
 	}
 
 	return (
-		<a onClick={onSignIn} className="flex gap-3">
+		<a onClick={onSignIn} className="flex items-center gap-2">
 			<SignInIcon />
 			<span>
 				Sign In
@@ -47,7 +51,7 @@ function SignUp() {
 	}
 
 	return (
-		<a onClick={onSignUp} className="flex gap-3">
+		<a onClick={onSignUp} className="flex items-center gap-2">
 			<SignUpIcon />
 			<span>
 				Sign Up
@@ -94,7 +98,7 @@ export default function MyProfile({ sessionData }: PropsWithSessionData) {
 		<div className="flex flex-col">
 			<div className="avatar" onClick={() => setIsCollapseOpened(!isCollapseOpened)}>
 				<div className="rounded">
-					<img src="/myprofile.jpg" />
+					<img src="/myprofile.jpg" alt="My profile image" />
 				</div>
 			</div>
 			<div className={collapseClassName}>
@@ -106,7 +110,7 @@ export default function MyProfile({ sessionData }: PropsWithSessionData) {
 						{profileActions.map(
 							(action, index) => (
 								<li key={index}>
-									<a onClick={action.onClick} className="flex gap-3">
+									<a onClick={action.onClick} className="flex items-center gap-2">
 										{createElement(action.icon)}
 										<span>
 											{action.label}
