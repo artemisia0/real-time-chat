@@ -3,6 +3,8 @@
 import ThemeController from '@/components/ThemeController'
 import MyProfile from '@/components/MyProfile'
 import SignInModal from '@/components/SignInModal'
+import SignUpModal from '@/components/SignUpModal'
+import SignOutModal from '@/components/SignOutModal'
 import type PropsWithSessionData from '@/types/PropsWithSessionData'
 import { ApolloProvider } from '@apollo/client'
 import gqlClient from '@/graphql/gqlClient'
@@ -22,6 +24,8 @@ export default function RootPage({ sessionData }: PropsWithSessionData) {
 						<ThemeController />
 					</div>
 					<SignInModal />
+					<SignUpModal />
+					<SignOutModal />
 				</div>
 				<div className="drawer-side">
 					<label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay"></label>

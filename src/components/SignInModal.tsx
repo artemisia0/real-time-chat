@@ -44,6 +44,12 @@ export default function SignInModal() {
 					password: passwordValue,
 				}
 			}
+		).then(
+			(res: any) => {
+				if (res.data?.signIn?.ok && window?.location) {
+					window.location.reload()
+				}
+			}
 		)
 	}
 

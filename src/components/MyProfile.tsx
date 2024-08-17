@@ -48,6 +48,10 @@ function SignIn() {
 
 function SignUp() {
 	const onSignUp = () => {
+		if (document != null) {
+			const validDocument = document as any
+			validDocument.getElementById('sign-up-modal').showModal()
+		}
 	}
 
 	return (
@@ -64,6 +68,10 @@ export default function MyProfile({ sessionData }: PropsWithSessionData) {
 	const [isCollapseOpened, setIsCollapseOpened] = useState(false)
 	
 	const onSignOut = () => {
+		if (document != null) {
+			const validDocument = document as any
+			validDocument.getElementById('sign-out-modal').showModal()
+		}
 	}
 
 	const signedIn = sessionData.username != null
