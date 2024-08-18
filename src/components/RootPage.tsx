@@ -8,6 +8,7 @@ import SignOutModal from '@/components/SignOutModal'
 import type PropsWithSessionData from '@/types/PropsWithSessionData'
 import { ApolloProvider } from '@apollo/client'
 import gqlClient from '@/graphql/gqlClient'
+import ChatsList from '@/components/ChatsList'
 
 
 export default function RootPage({ sessionData }: PropsWithSessionData) {
@@ -31,11 +32,9 @@ export default function RootPage({ sessionData }: PropsWithSessionData) {
 					<label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
 					<div className="bg-base-200 text-base-content min-h-full w-64 p-2">
 						<MyProfile sessionData={sessionData} />
-						<ul className="menu">
-							{/* Sidebar content here */}
-							<li><a>Sidebar Item 1</a></li>
-							<li><a>Sidebar Item 2</a></li>
-						</ul>
+						{ sessionData?.username &&
+							<ChatsList sessionData={sessionData} />
+						}
 					</div>
 				</div>
 			</div>
