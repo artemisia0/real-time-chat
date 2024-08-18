@@ -1,7 +1,4 @@
 # real-time-chat backlog
-- frontend for chats list (it should be a menu located in sidebar)
-- frontend for a chat with messages and message input
-- frontend for chat header (chat name + settings icon) and chat settings
 - GQL API that supports CRUD operations on chats (every user has its own modifiable chat list); integrate this API with frontend
 - GQL API that supports CRUD operations on chat messages; integrate it with frontend
 - frontend for message manipulation (delete/change)

@@ -1,7 +1,7 @@
 
-export default function ThemeController() {
+export default function ThemeController({ className='' }: { className?: string; }) {
 	return (
-		<label className="swap swap-rotate btn btn-md btn-circle btn-ghost">
+		<label className={"swap swap-rotate btn btn-md btn-circle " + className}>
 			<input type="checkbox" className="theme-controller" value="corporate" />
 
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 swap-off">

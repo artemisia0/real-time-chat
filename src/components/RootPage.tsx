@@ -1,6 +1,5 @@
 'use client'
 
-import ThemeController from '@/components/ThemeController'
 import MyProfile from '@/components/MyProfile'
 import SignInModal from '@/components/SignInModal'
 import SignUpModal from '@/components/SignUpModal'
@@ -9,6 +8,7 @@ import type PropsWithSessionData from '@/types/PropsWithSessionData'
 import { ApolloProvider } from '@apollo/client'
 import gqlClient from '@/graphql/gqlClient'
 import ChatsList from '@/components/ChatsList'
+import ChatDashboard from '@/components/ChatDashboard'
 
 
 export default function RootPage({ sessionData }: PropsWithSessionData) {
@@ -16,19 +16,18 @@ export default function RootPage({ sessionData }: PropsWithSessionData) {
 		<ApolloProvider client={gqlClient}>
 			<div className="drawer sm:drawer-open">
 				<input id="main-drawer" type="checkbox" className="drawer-toggle" />
-				<div className="drawer-content p-2">
-					<div className="flex w-full">
-						<label htmlFor="main-drawer" className="btn btn-md btn-circle btn-ghost sm:hidden">
-							<BurgerMenuIcon />
-						</label>
-						<div className="flex w-full" />
-						<ThemeController />
-					</div>
+				<div className="drawer-content p-2 h-dvh">
+					<label htmlFor="main-drawer" className="btn btn-md btn-circle sm:hidden absolute left-4 top-4 z-60">
+						<BurgerMenuIcon />
+					</label>
+					{ sessionData?.username &&
+						<ChatDashboard sessionData={sessionData} />
+					}
 					<SignInModal />
 					<SignUpModal />
 					<SignOutModal />
 				</div>
-				<div className="drawer-side">
+				<div className="drawer-side min-h-screen">
 					<label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
 					<div className="bg-base-200 text-base-content min-h-full w-64 p-2">
 						<MyProfile sessionData={sessionData} />
