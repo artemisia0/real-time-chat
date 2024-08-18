@@ -9,6 +9,7 @@ import { ApolloProvider } from '@apollo/client'
 import gqlClient from '@/graphql/gqlClient'
 import ChatsList from '@/components/ChatsList'
 import ChatDashboard from '@/components/ChatDashboard'
+import CreateChatModal from '@/components/CreateChatModal'
 
 
 export default function RootPage({ sessionData }: PropsWithSessionData) {
@@ -26,6 +27,9 @@ export default function RootPage({ sessionData }: PropsWithSessionData) {
 					<SignInModal />
 					<SignUpModal />
 					<SignOutModal />
+					{sessionData?.username &&
+						<CreateChatModal sessionData={sessionData} />
+					}
 				</div>
 				<div className="drawer-side min-h-screen">
 					<label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay"></label>

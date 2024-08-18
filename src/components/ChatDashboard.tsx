@@ -103,7 +103,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 				{
 					messages.map(
 						(msg, index) => (
-							<div className={"flex flex-col gap-2 chat" + (msg.username === sessionData?.username ? ' chat-end' : ' chat-start')}>
+							<div key={index} className={"flex flex-col gap-2 chat" + (msg.username === sessionData?.username ? ' chat-end' : ' chat-start')}>
 								<div className="font-bold">
 									{msg.username !== sessionData.username
 										? msg.username
