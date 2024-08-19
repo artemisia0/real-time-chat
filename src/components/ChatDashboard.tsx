@@ -1,21 +1,61 @@
-import { useAtomValue } from 'jotai'
+import { useAtomValue, useAtom } from 'jotai'
 import activeChatIDAtom from '@/jotaiAtoms/activeChatIDAtom'
 import type PropsWithSessionData from '@/types/PropsWithSessionData'
 import SendIcon from '@/components/SendIcon'
 import AttachIcon from '@/components/AttachIcon'
 import SettingsIcon from '@/components/SettingsIcon'
-import { useState } from 'react'
-import ThemeController from '@/components/ThemeController'
+import { useState, useRef } from 'react'
 import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
+import { useMutation, gql } from '@apollo/client'
 
+
+const leaveChatMutation = gql`
+mutation LeaveChat($username: String!, $chatID: String!) {
+	leaveChat(username: $username, chatID: $chatID) {
+		ok
+		message
+	}
+}
+`
+
+function LeaveIcon() {
+	return (
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+</svg>
+	)
+}
 
 export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
-	const activeChatID = useAtomValue(activeChatIDAtom)
+	const [activeChatID, setActiveChatID] = useAtom(activeChatIDAtom)
 	const [settingsDropdownOpened, setSettingsDropdownOpened] = useState(false)
-	const userChats = useAtomValue(userChatsAtom)
+	const [userChats, setUserChats] = useAtom(userChatsAtom)
+	const [leaveChat, leaveChatResponse] = useMutation(leaveChatMutation)
+	const settingsDropdownRef = useRef<any>(undefined)
 
 	const onSettingsClick = () => {
 		setSettingsDropdownOpened(!settingsDropdownOpened)
+		if (settingsDropdownRef?.current) {
+			settingsDropdownRef.current.blur()
+		}
+	}
+
+	const onLeaveChat = () => {
+		onSettingsClick()
+		if (!sessionData?.username || !activeChatID || !userChats) {
+			return;
+		}
+		const filteredUserChats = userChats.filter((chat) => chat._id !== activeChatID)
+		setUserChats(filteredUserChats)
+		leaveChat({
+			variables: {
+				username: sessionData.username!,
+				chatID: activeChatID!,
+			}
+		})
+		if (filteredUserChats[0]?._id) {
+			setActiveChatID(filteredUserChats[0]._id!)
+		}
 	}
 
 	const messages = [
@@ -146,15 +186,17 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 					<span className="flex flex-grow justify-center font-bold">
 						{activeChatName}
 					</span>
-					<div className={"dropdown dropdown-top dropdown-end" + (settingsDropdownOpened ? '  dropdown-opened' : ' ')}>
+					<div tabIndex={0} className={"dropdown dropdown-top dropdown-end" + (settingsDropdownOpened ? '  dropdown-opened' : ' ')}>
 						<button className={"btn btn-primary btn-square"} onClick={onSettingsClick}>
 							<SettingsIcon />
 						</button>
-						<ul tabIndex={0} className="relative dropdown-content menu bg-base-200 w-64 p-2 shadow">
+						<ul ref={settingsDropdownRef} tabIndex={0} className="dropdown-content menu bg-base-200 w-64 p-2 shadow">
 							<li>
-								<a className="flex justify-between items-center">
-									<span>Switch day/night mode</span>
-									<ThemeController />
+								<a className="flex items-center gap-2 text-error" onClick={onLeaveChat}>
+									<LeaveIcon />
+									<span className="font-bold">
+										Leave group
+									</span>
 								</a>
 							</li>
 						</ul>

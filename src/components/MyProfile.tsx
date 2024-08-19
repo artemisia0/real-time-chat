@@ -2,6 +2,7 @@
 
 import { useState, createElement } from 'react'
 import type PropsWithSessionData from '@/types/PropsWithSessionData'
+import ThemeControllerMenuItem from '@/components/ThemeControllerMenuItem'
 
 
 function SignOutIcon() {
@@ -113,8 +114,9 @@ export default function MyProfile({ sessionData }: PropsWithSessionData) {
 				<div className="collapse-title" onClick={() => setIsCollapseOpened(!isCollapseOpened)}>
 					{username}
 				</div>
-				<div className="collapse-content">
+				<div className="collapse-content p-0">
 					<ul className="menu">
+						<ThemeControllerMenuItem />
 						{profileActions.map(
 							(action, index) => (
 								<li key={index}>

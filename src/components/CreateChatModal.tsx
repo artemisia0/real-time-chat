@@ -37,6 +37,7 @@ export default function CreateChatModal({ sessionData }: PropsWithSessionData) {
 		if (!sessionData?.username) {
 			return;
 		}
+		setChatNameValue('')
 
 		createChat({
 			variables: {
