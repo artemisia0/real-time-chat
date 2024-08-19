@@ -10,6 +10,7 @@ import gqlClient from '@/graphql/gqlClient'
 import ChatsList from '@/components/ChatsList'
 import ChatDashboard from '@/components/ChatDashboard'
 import CreateChatModal from '@/components/CreateChatModal'
+import RenameChatModal from '@/components/RenameChatModal'
 
 
 export default function RootPage({ sessionData }: PropsWithSessionData) {
@@ -28,7 +29,10 @@ export default function RootPage({ sessionData }: PropsWithSessionData) {
 					<SignUpModal />
 					<SignOutModal />
 					{sessionData?.username &&
-						<CreateChatModal sessionData={sessionData} />
+						<>
+							<CreateChatModal sessionData={sessionData} />
+							<RenameChatModal sessionData={sessionData} />
+						</>
 					}
 				</div>
 				<div className="drawer-side min-h-screen">

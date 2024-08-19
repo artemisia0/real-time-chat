@@ -4,6 +4,7 @@ import signOut from '@/graphql/resolvers/mutation/signOut'
 import createChat from '@/graphql/resolvers/mutation/createChat'
 import leaveChat from '@/graphql/resolvers/mutation/leaveChat'
 import chats from '@/graphql/resolvers/query/chats'
+import renameChat from '@/graphql/resolvers/mutation/renameChat'
 
 
 const resolvers = {
@@ -16,6 +17,7 @@ const resolvers = {
 		signOut,
 		createChat,
 		leaveChat,
+		renameChat,
 	}
 }
 

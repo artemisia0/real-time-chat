@@ -7,6 +7,7 @@ import SettingsIcon from '@/components/SettingsIcon'
 import { useState, useRef } from 'react'
 import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
 import { useMutation, gql } from '@apollo/client'
+import EditIcon from '@/components/EditIcon'
 
 
 const leaveChatMutation = gql`
@@ -37,6 +38,13 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 		setSettingsDropdownOpened(!settingsDropdownOpened)
 		if (settingsDropdownRef?.current) {
 			settingsDropdownRef.current.blur()
+		}
+	}
+
+	const onRenameChat = () => {
+		if (document) {
+			const validDocument = document as any
+			validDocument.getElementById('rename-chat-modal').showModal()
 		}
 	}
 
@@ -192,10 +200,18 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 						</button>
 						<ul ref={settingsDropdownRef} tabIndex={0} className="dropdown-content menu bg-base-200 w-64 p-2 shadow">
 							<li>
+								<a className="flex items-center gap-2" onClick={onRenameChat}>
+									<EditIcon />
+									<span className="font-bold">
+										Rename chat
+									</span>
+								</a>
+							</li>
+							<li>
 								<a className="flex items-center gap-2 text-error" onClick={onLeaveChat}>
 									<LeaveIcon />
 									<span className="font-bold">
-										Leave group
+										Leave chat
 									</span>
 								</a>
 							</li>
