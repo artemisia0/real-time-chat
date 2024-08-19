@@ -6,11 +6,13 @@ import AttachIcon from '@/components/AttachIcon'
 import SettingsIcon from '@/components/SettingsIcon'
 import { useState } from 'react'
 import ThemeController from '@/components/ThemeController'
+import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
 
 
 export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	const activeChatID = useAtomValue(activeChatIDAtom)
 	const [settingsDropdownOpened, setSettingsDropdownOpened] = useState(false)
+	const userChats = useAtomValue(userChatsAtom)
 
 	const onSettingsClick = () => {
 		setSettingsDropdownOpened(!settingsDropdownOpened)
@@ -97,6 +99,18 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 		)
 	}
 
+	// go through all userChats and find one where _id is activeChatID
+	// then its name is activeChatName
+	
+	let activeChatName = ''
+	if (userChats) {
+		for (let { _id, name } of userChats!) {
+			if (_id === activeChatID) {
+				activeChatName = name
+			}
+		}
+	}
+
 	return (
 		<div className="flex flex-col items-center justify-between gap-4 w-full h-full">
 			<div className="p-4 overflow-y-scroll overflow-x-hidden max-h-max max-w-[720px] w-full flex flex-col gap-2">
@@ -130,7 +144,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 				</div>
 				<div className="flex w-full bg-neutral p-2 items-center">
 					<span className="flex flex-grow justify-center font-bold">
-						{"Chat ID: " + activeChatID}
+						{activeChatName}
 					</span>
 					<div className={"dropdown dropdown-top dropdown-end" + (settingsDropdownOpened ? '  dropdown-opened' : ' ')}>
 						<button className={"btn btn-primary btn-square"} onClick={onSettingsClick}>
