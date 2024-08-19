@@ -3,6 +3,8 @@ import activeChatIDAtom from '@/jotaiAtoms/activeChatIDAtom'
 import { useAtom } from 'jotai'
 import PlusIcon from '@/components/PlusIcon'
 import { gql, useQuery } from '@apollo/client'
+import { useState, useEffect } from 'react'
+import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
 
 
 const chatsQuery = gql`
@@ -16,13 +18,23 @@ query Chats($username: String!) {
 
 export default function ChatsList({ sessionData }: PropsWithSessionData) {
 	const [activeChatID, setActiveChatID] = useAtom(activeChatIDAtom)
+	const [userChats, setUserChats] = useAtom(userChatsAtom)
 	const chatsQueryResponse = useQuery(chatsQuery, {
 		variables: {
 			username: sessionData?.username!,
 		}
 	})
 
-	const chats = chatsQueryResponse?.data?.chats
+	useEffect(
+		() => {
+			const doAsyncStuff = async () => {
+				if (chatsQueryResponse?.data?.chats) {
+					setUserChats(chatsQueryResponse?.data?.chats!)
+				}
+			}
+			doAsyncStuff()
+		}, [chatsQueryResponse?.data?.chats, setUserChats]
+	)
 
 	const onCreateChat = () => {
 		if (document) {
@@ -62,7 +74,7 @@ export default function ChatsList({ sessionData }: PropsWithSessionData) {
 					)
 				)
 			}
-			{chats != null && chats.map(
+			{userChats != null && userChats.map(
 					(chat: { _id: string; name: string; }, index: number) => (
 						<li key={index}>
 							<a onClick={() => setActiveChatID(chat._id)}>

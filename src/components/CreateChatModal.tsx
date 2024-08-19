@@ -4,7 +4,8 @@ import { useState } from 'react'
 import SuccessIcon from '@/components/SuccessIcon'
 import ErrorIcon from '@/components/ErrorIcon'
 import activeChatIDAtom from '@/jotaiAtoms/activeChatIDAtom'
-import { useSetAtom } from 'jotai'
+import { useSetAtom, useAtom } from 'jotai'
+import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
 
 
 const createChatMutation = gql`
@@ -16,6 +17,7 @@ mutation CreateChat($name: String!, $creatorUsername: String!) {
 		}
 		chat {
 			_id
+			name
 		}
 	}
 }
@@ -25,6 +27,7 @@ export default function CreateChatModal({ sessionData }: PropsWithSessionData) {
 	const [createChat, createChatResponse] = useMutation(createChatMutation)
 	const [chatNameValue, setChatNameValue] = useState('')
 	const setActiveChatID = useSetAtom(activeChatIDAtom)
+	const [userChats, setUserChats] = useAtom(userChatsAtom)
 
 	const onChatNameValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setChatNameValue(event.target.value)
@@ -44,6 +47,13 @@ export default function CreateChatModal({ sessionData }: PropsWithSessionData) {
 				(res) => {
 					if (res?.data?.createChat?.status?.ok && res?.data?.createChat?.chat?._id) {
 						setActiveChatID(res.data.createChat.chat._id)
+						const newChat = {
+							_id: res.data.createChat.chat._id,
+							name: res.data.createChat.chat.name,
+						}
+						if (userChats !== undefined) {
+							setUserChats([newChat, ...(userChats!)])
+						}
 					}
 					if (document) {
 						const validDocument = document as any
