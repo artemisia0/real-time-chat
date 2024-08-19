@@ -3,19 +3,19 @@ import { gql, useMutation } from '@apollo/client'
 import { useState } from 'react'
 import SuccessIcon from '@/components/SuccessIcon'
 import ErrorIcon from '@/components/ErrorIcon'
+import activeChatIDAtom from '@/jotaiAtoms/activeChatIDAtom'
+import { useSetAtom } from 'jotai'
 
 
 const createChatMutation = gql`
 mutation CreateChat($name: String!, $creatorUsername: String!) {
 	createChat(name: $name, creatorUsername: $creatorUsername) {
-		CreateChatResponse {
-			status {
-				ok
-				message
-			}
-			chat {
-				ID
-			}
+		status {
+			ok
+			message
+		}
+		chat {
+			_id
 		}
 	}
 }
@@ -24,6 +24,7 @@ mutation CreateChat($name: String!, $creatorUsername: String!) {
 export default function CreateChatModal({ sessionData }: PropsWithSessionData) {
 	const [createChat, createChatResponse] = useMutation(createChatMutation)
 	const [chatNameValue, setChatNameValue] = useState('')
+	const setActiveChatID = useSetAtom(activeChatIDAtom)
 
 	const onChatNameValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setChatNameValue(event.target.value)
@@ -39,7 +40,17 @@ export default function CreateChatModal({ sessionData }: PropsWithSessionData) {
 				name: chatNameValue,
 				creatorUsername: sessionData.username!,
 			}
-		})
+		}).then(
+				(res) => {
+					if (res?.data?.createChat?.status?.ok && res?.data?.createChat?.chat?._id) {
+						setActiveChatID(res.data.createChat.chat._id)
+					}
+					if (document) {
+						const validDocument = document as any
+						validDocument.getElementById('close-create-chat-modal-button').click()
+					}
+				}
+			)
 	}
 
 	return (
@@ -68,7 +79,7 @@ export default function CreateChatModal({ sessionData }: PropsWithSessionData) {
 					</div>
 					<div className="modal-action">
 						<form method="dialog">
-							<button className="btn btn-secondary btn-ghost">
+							<button className="btn btn-secondary btn-ghost" id='close-create-chat-modal-button'>
 								Close
 							</button>
 						</form>

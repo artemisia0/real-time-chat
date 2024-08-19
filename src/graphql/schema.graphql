@@ -1,11 +1,13 @@
 type Query {
-	hello: String
+  chats(username: String!): [Chat!]!
 }
 
 type Mutation {
 	signIn(userCredentials: UserCredentials!): Status!
 	signUp(userCredentials: UserCredentials!): Status!
 	signOut: Status!
+
+  createChat(name: String!, creatorUsername: String!): CreateChatResponse!
 }
 
 input UserCredentials {
@@ -16,5 +18,15 @@ input UserCredentials {
 type Status {
 	ok: Boolean!
 	message: String!
+}
+
+type CreateChatResponse {
+  status: Status!
+  chat: Chat!
+}
+
+type Chat {
+  _id: String!
+  name: String!
 }
 
