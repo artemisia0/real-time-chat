@@ -4,15 +4,36 @@ import type PropsWithSessionData from '@/types/PropsWithSessionData'
 import SendIcon from '@/components/SendIcon'
 import AttachIcon from '@/components/AttachIcon'
 import SettingsIcon from '@/components/SettingsIcon'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
-import { useMutation, gql } from '@apollo/client'
+import { useMutation, useQuery, gql } from '@apollo/client'
 import EditIcon from '@/components/EditIcon'
+import activeChatMessagesAtom from '@/jotaiAtoms/activeChatMessagesAtom'
+import { format } from 'date-fns'
 
 
 const leaveChatMutation = gql`
 mutation LeaveChat($username: String!, $chatID: String!) {
 	leaveChat(username: $username, chatID: $chatID) {
+		ok
+		message
+	}
+}
+`
+
+const messagesQuery = gql`
+query Messages($chatID: String!) {
+	messages(chatID: $chatID) {
+		contents
+		authorUsername
+		date
+	}
+}
+`
+
+const createMessageMutation = gql`
+mutation CreateMessage($chatID: String!, $authorUsername: String!, $contents: String!, $date: DateTime!) {
+	createMessage(chatID: $chatID, authorUsername: $authorUsername, contents: $contents, date: $date) {
 		ok
 		message
 	}
@@ -33,6 +54,94 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	const [userChats, setUserChats] = useAtom(userChatsAtom)
 	const [leaveChat, leaveChatResponse] = useMutation(leaveChatMutation)
 	const settingsDropdownRef = useRef<any>(undefined)
+	const messagesQueryResponse = useQuery(messagesQuery, {
+		variables: {
+			chatID: activeChatID,
+		}
+	})
+	const messageInputRef = useRef<any>(undefined)
+	const [activeChatMessages, setActiveChatMessages] = useAtom(activeChatMessagesAtom)
+	const [createMessage, createMessageResponse] = useMutation(createMessageMutation)
+	const lastMessageRef = useRef<any>(undefined)
+
+	useEffect(
+		() => {
+			if (lastMessageRef.current) {
+				lastMessageRef.current.scrollIntoView({ behaviour: 'smooth', block: 'center' })
+			}
+		}, [activeChatMessages]
+	)
+
+
+	useEffect(
+		() => {
+			const doAsyncWork = async () => {
+				if (messagesQueryResponse.data?.messages) {
+					setActiveChatMessages(messagesQueryResponse.data.messages!)
+				}
+			}
+			doAsyncWork()
+		}, [messagesQueryResponse.data?.messages, setActiveChatMessages]
+	)
+
+	const onSendMessage = () => {
+		const messageContents = messageInputRef.current?.value
+		if (messageContents && activeChatID && sessionData.username) {
+			// add message to activeChatMessages as a loading one (or processing one)
+			const newMessages = [...(activeChatMessages!)]
+			const newMessageData = {
+				chatID: activeChatID,
+				authorUsername: sessionData.username! as string,
+				contents: messageContents! as string,
+				date: new Date(),
+				loading: true,
+			}
+			messageInputRef.current.value = ''
+			newMessages.push(newMessageData)
+			setActiveChatMessages(newMessages)
+
+			const onCreateMessageError = (errMsg: string) => {
+				for (let messageIndex = 0; messageIndex < newMessages.length; messageIndex += 1) {
+					if (newMessages[messageIndex] === newMessageData) {
+						const msgs = [...newMessages]
+						msgs[messageIndex].loading = false
+						msgs[messageIndex].errorMessage = errMsg
+						setActiveChatMessages(msgs)
+						break;
+					}
+				}
+			}
+
+			// API call
+			createMessage({
+				variables: {
+					chatID: newMessageData.chatID!,
+					authorUsername: newMessageData.authorUsername!,
+					contents: newMessageData.contents!,
+					date: newMessageData.date!,
+				}
+			}).then(
+					(res) => {
+						if (res.data.createMessage.ok) {
+							// make loading message to be displayed as already sended one
+							for (let messageIndex = 0; messageIndex < newMessages.length; messageIndex += 1) {
+								if (newMessages[messageIndex] === newMessageData) {
+									const msgs = [...newMessages]
+									msgs[messageIndex].loading = false
+									setActiveChatMessages(msgs)
+									break;
+								}
+							}
+						} else if (res.data.createMessage.message) {
+							// make loading message to be displayed as a bad one
+							// and display res.createMessage.message as an error description
+							onCreateMessageError(res.data.createMessage.message)
+						}
+					},
+					(err) => onCreateMessageError(err.toString())
+				)
+		}
+	}
 
 	const onSettingsClick = () => {
 		setSettingsDropdownOpened(!settingsDropdownOpened)
@@ -66,89 +175,11 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 		}
 	}
 
-	const messages = [
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'artem',
-			contents: 'Hi out there! I can send messages too!!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-		{
-			username: 'user123',
-			contents: 'First message ever written!',
-		},
-	]
-
 	if (!activeChatID) {
 		return (
 			<div />
 		)
 	}
-
-	// go through all userChats and find one where _id is activeChatID
-	// then its name is activeChatName
 	
 	let activeChatName = ''
 	if (userChats) {
@@ -162,18 +193,33 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	return (
 		<div className="flex flex-col items-center justify-between gap-4 w-full h-full">
 			<div className="p-4 overflow-y-scroll overflow-x-hidden max-h-max max-w-[720px] w-full flex flex-col gap-2">
-				{
-					messages.map(
-						(msg, index) => (
-							<div key={index} className={"flex flex-col gap-2 chat" + (msg.username === sessionData?.username ? ' chat-end' : ' chat-start')}>
-								<div className="font-bold">
-									{msg.username !== sessionData.username
-										? msg.username
-										: ''
-									}
+				{ activeChatMessages &&
+					activeChatMessages.map(
+						(msg: { loading?: boolean; errorMessage?: string; contents: string; authorUsername: string; date: Date; }, index: number) => (
+							<div key={index} className={"flex flex-col gap-2 chat" + (msg.authorUsername === sessionData?.username ? ' chat-end' : ' chat-start')} ref={index === activeChatMessages.length-1 ? lastMessageRef : undefined}>
+								<div className="flex justify-between text-sm">
+									<span>
+										{msg.authorUsername !== sessionData.username
+											? msg.authorUsername
+											: ''
+										}
+									</span>
+									<span>
+										{format(msg.date, 'hh:mm:ss yyyy/MM/dd')}
+									</span>
 								</div>
-								<div className="chat-bubble">
-									{msg.contents}
+								<div className="chat-bubble flex flex-col justify-center gap-2">
+									<span>
+										{msg.contents}
+									</span>
+									{msg.errorMessage &&
+										<span className="text-error font-bold">
+											{msg.errorMessage}
+										</span>
+									}
+									{msg.loading &&
+										<span className="loading loading-dots" />
+									}
 								</div>
 							</div>
 						)
@@ -182,8 +228,8 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 			</div>
 			<div className="flex flex-col w-full gap-2 max-w-[720px]">
 				<div className="flex w-full bg-neutral gap-2 p-2 items-center">
-					<input className="input input-bordered w-full" type="text" placeholder="Message" />
-					<button className="btn btn-primary btn-square">
+					<input className="input input-bordered w-full" type="text" placeholder="Message" ref={messageInputRef} />
+					<button className="btn btn-primary btn-square" onClick={onSendMessage}>
 						<SendIcon />
 					</button>
 					<button className="btn btn-primary btn-square">

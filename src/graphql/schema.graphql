@@ -1,5 +1,8 @@
+scalar DateTime
+
 type Query {
   chats(username: String!): [Chat!]!
+  messages(chatID: String!): [Message!]!
 }
 
 type Mutation {
@@ -10,6 +13,8 @@ type Mutation {
   createChat(name: String!, creatorUsername: String!): CreateChatResponse!
   leaveChat(username: String!, chatID: String!): Status!
   renameChat(chatID: String!, name: String!): Status!
+
+  createMessage(contents: String!, authorUsername: String!, chatID: String!, date: DateTime!): Status!
 }
 
 input UserCredentials {
@@ -30,5 +35,12 @@ type CreateChatResponse {
 type Chat {
   _id: String!
   name: String!
+}
+
+type Message {
+  contents: String!
+  authorUsername: String!
+  date: DateTime!
+  chatID: String!
 }
 
