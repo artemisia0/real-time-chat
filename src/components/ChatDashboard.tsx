@@ -209,7 +209,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 									</span>
 								</div>
 								<div className="chat-bubble flex flex-col justify-center gap-2">
-									<span>
+									<span className="break-words">
 										{msg.contents}
 									</span>
 									{msg.errorMessage &&
