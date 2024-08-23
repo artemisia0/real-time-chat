@@ -10,6 +10,8 @@ import { useMutation, useQuery, gql } from '@apollo/client'
 import EditIcon from '@/components/EditIcon'
 import activeChatMessagesAtom from '@/jotaiAtoms/activeChatMessagesAtom'
 import { format } from 'date-fns'
+import DeleteIcon from '@/components/DeleteIcon'
+import type MessageData from '@/types/MessageData'
 
 
 const leaveChatMutation = gql`
@@ -27,6 +29,7 @@ query Messages($chatID: String!) {
 		contents
 		authorUsername
 		date
+		_id
 	}
 }
 `
@@ -34,8 +37,35 @@ query Messages($chatID: String!) {
 const createMessageMutation = gql`
 mutation CreateMessage($chatID: String!, $authorUsername: String!, $contents: String!, $date: DateTime!) {
 	createMessage(chatID: $chatID, authorUsername: $authorUsername, contents: $contents, date: $date) {
-		ok
-		message
+		status {
+			ok
+			message
+		}
+		newMessage {
+			_id
+		}
+	}
+}
+`
+
+const editMessageMutation = gql`
+mutation EditMessage($messageID: String!, $newMessageContents: String!) {
+	editMessage(messageID: $messageID, newMessageContents: $newMessageContents) {
+		status {
+			ok
+			message
+		}
+	}
+}
+`
+
+const deleteMessageMutation = gql`
+mutation DeleteMessage($messageID: String!) {
+	deleteMessage(messageID: $messageID) {
+		status {
+			ok
+			message
+		}
 	}
 }
 `
@@ -63,6 +93,53 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	const [activeChatMessages, setActiveChatMessages] = useAtom(activeChatMessagesAtom)
 	const [createMessage, createMessageResponse] = useMutation(createMessageMutation)
 	const lastMessageRef = useRef<any>(undefined)
+	const [indexOfFocusedMessage, setIndexOfFocusedMessage] = useState<number | undefined>(undefined)
+	const [indexOfMessageToEdit, setIndexOfMessageToEdit] = useState<number | undefined>(undefined)
+	const [editMessageMutator, editMessageMutatorResponse] = useMutation(editMessageMutation)
+	const [deleteMessageMutator, deleteMessageMutatorResponse] = useMutation(deleteMessageMutation)
+
+	const onSubmitEditedMessage = (index: number) => {
+		const editedContents = messageInputRef.current?.value!
+		messageInputRef.current.value = ''
+		const oldMessageData = (activeChatMessages!)[index]
+		const updateState = () => {
+			const msgs = [...(activeChatMessages!)]
+			const msg = {
+				...msgs[index],
+				contents: editedContents,
+			}
+			setActiveChatMessages([
+				...msgs.slice(0, index),
+				msg,
+				...msgs.slice(index + 1)
+			])
+		}
+		updateState()
+		editMessageMutator({
+			variables: {
+				messageID: oldMessageData._id!,
+				newMessageContents: editedContents,
+			}
+		})  // TODO: errors from editMessageMutator should be handled
+		setIndexOfMessageToEdit(undefined)
+	}
+
+	const onEditMessage = (index: number) => {
+		messageInputRef.current.value = (activeChatMessages!)[index].contents
+		setIndexOfMessageToEdit(indexOfFocusedMessage)
+		setIndexOfFocusedMessage(undefined)
+	}
+
+	const onDeleteMessage = (index: number) => {
+		setIndexOfFocusedMessage(undefined)
+		deleteMessageMutator({
+			variables: {
+				messageID: (activeChatMessages!)[index]._id!,
+			}
+		})  // TODO: errors from deleteMessageMutator should be handled
+		const msgs = (activeChatMessages!).filter((_: any, i: number) => i !== index)
+		setActiveChatMessages(msgs)
+	}
 
 	useEffect(
 		() => {
@@ -71,7 +148,6 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 			}
 		}, [activeChatMessages]
 	)
-
 
 	useEffect(
 		() => {
@@ -95,6 +171,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 				contents: messageContents! as string,
 				date: new Date(),
 				loading: true,
+				_id: undefined
 			}
 			messageInputRef.current.value = ''
 			newMessages.push(newMessageData)
@@ -122,20 +199,21 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 				}
 			}).then(
 					(res) => {
-						if (res.data.createMessage.ok) {
+						if (res.data.createMessage.status.ok) {
 							// make loading message to be displayed as already sended one
 							for (let messageIndex = 0; messageIndex < newMessages.length; messageIndex += 1) {
 								if (newMessages[messageIndex] === newMessageData) {
 									const msgs = [...newMessages]
 									msgs[messageIndex].loading = false
+									msgs[messageIndex]._id = res.data.createMessage.newMessage._id!
 									setActiveChatMessages(msgs)
 									break;
 								}
 							}
-						} else if (res.data.createMessage.message) {
+						} else if (res.data.createMessage.status.message) {
 							// make loading message to be displayed as a bad one
 							// and display res.createMessage.message as an error description
-							onCreateMessageError(res.data.createMessage.message)
+							onCreateMessageError(res.data.createMessage.status.message)
 						}
 					},
 					(err) => onCreateMessageError(err.toString())
@@ -195,9 +273,9 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 			<div className="p-4 overflow-y-scroll overflow-x-hidden max-h-max max-w-[720px] w-full flex flex-col gap-2">
 				{ activeChatMessages &&
 					activeChatMessages.map(
-						(msg: { loading?: boolean; errorMessage?: string; contents: string; authorUsername: string; date: Date; }, index: number) => (
+						(msg: MessageData, index: number) => (
 							<div key={index} className={"flex flex-col gap-2 chat" + (msg.authorUsername === sessionData?.username ? ' chat-end' : ' chat-start')} ref={index === activeChatMessages.length-1 ? lastMessageRef : undefined}>
-								<div className="flex justify-between text-sm">
+								<div className="flex flex-col gap-1 text-sm">
 									<span>
 										{msg.authorUsername !== sessionData.username
 											? msg.authorUsername
@@ -208,9 +286,31 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 										{format(msg.date, 'hh:mm:ss yyyy/MM/dd')}
 									</span>
 								</div>
-								<div className="chat-bubble flex flex-col justify-center gap-2">
-									<span className="break-words">
-										{msg.contents}
+								<button className="chat-bubble flex flex-col justify-center gap-2" onFocus={() => setIndexOfFocusedMessage(index)} onBlur={() => setIndexOfFocusedMessage(undefined)} disabled={msg._id ? false : true}>
+									<span className="break-words relative">
+										<span className={(indexOfFocusedMessage === index ? 'blur-sm' : ' ')}>
+											{msg.contents}
+										</span>
+										{index === indexOfFocusedMessage &&
+											<ul className="z-[2] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 menu bg-base-200 p-2 shadow w-52">
+												<li>
+													<a onClick={() => onEditMessage(index)} className="flex items-center gap-2">
+														<EditIcon />
+														<span>
+															Edit
+														</span>
+													</a>
+												</li>
+												<li>
+													<a onClick={() => onDeleteMessage(index)} className="flex items-center gap-2 text-error">
+														<DeleteIcon />
+														<span>
+															Delete
+														</span>
+													</a>
+												</li>
+											</ul>
+										}
 									</span>
 									{msg.errorMessage &&
 										<span className="text-error font-bold">
@@ -220,7 +320,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 									{msg.loading &&
 										<span className="loading loading-dots" />
 									}
-								</div>
+								</button>
 							</div>
 						)
 					)
@@ -229,10 +329,10 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 			<div className="flex flex-col w-full gap-2 max-w-[720px]">
 				<div className="flex w-full bg-neutral gap-2 p-2 items-center">
 					<input className="input input-bordered w-full" type="text" placeholder="Message" ref={messageInputRef} />
-					<button className="btn btn-primary btn-square" onClick={onSendMessage}>
-						<SendIcon />
+					<button className="btn btn-primary btn-square" onClick={indexOfMessageToEdit === undefined ? onSendMessage : () => onSubmitEditedMessage(indexOfMessageToEdit!)}>
+						{indexOfMessageToEdit === undefined ? <SendIcon /> : <EditIcon />}
 					</button>
-					<button className="btn btn-primary btn-square">
+					<button className="btn btn-primary btn-square" disabled={indexOfMessageToEdit !== undefined}>
 						<AttachIcon />
 					</button>
 				</div>
@@ -244,7 +344,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 						<button className={"btn btn-primary btn-square"} onClick={onSettingsClick}>
 							<SettingsIcon />
 						</button>
-						<ul ref={settingsDropdownRef} tabIndex={0} className="dropdown-content menu bg-base-200 w-64 p-2 shadow">
+						<ul ref={settingsDropdownRef} tabIndex={0} className="dropdown-content menu bg-base-200 w-52 p-2 shadow">
 							<li>
 								<a className="flex items-center gap-2" onClick={onRenameChat}>
 									<EditIcon />

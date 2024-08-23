@@ -8,6 +8,8 @@ import renameChat from '@/graphql/resolvers/mutation/renameChat'
 import { DateTimeResolver } from 'graphql-scalars'
 import messages from '@/graphql/resolvers/query/messages'
 import createMessage from '@/graphql/resolvers/mutation/createMessage'
+import editMessage from '@/graphql/resolvers/mutation/editMessage'
+import deleteMessage from '@/graphql/resolvers/mutation/deleteMessage'
 
 
 const resolvers = {
@@ -24,6 +26,8 @@ const resolvers = {
 		leaveChat,
 		renameChat,
 		createMessage,
+		editMessage,
+		deleteMessage,
 	}
 }
 

@@ -6,8 +6,11 @@ export default async function createMessage(_: any, { chatID, contents, authorUs
 	await newMessage.save()
 
 	return {
-		ok: true,
-		message: "Successfully created new message.",
+		status: {
+			ok: true,
+			message: "Successfully created new message.",
+		},
+		newMessage
 	}
 }
 

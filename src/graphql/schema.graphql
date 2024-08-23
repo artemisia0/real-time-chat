@@ -14,7 +14,22 @@ type Mutation {
   leaveChat(username: String!, chatID: String!): Status!
   renameChat(chatID: String!, name: String!): Status!
 
-  createMessage(contents: String!, authorUsername: String!, chatID: String!, date: DateTime!): Status!
+  createMessage(contents: String!, authorUsername: String!, chatID: String!, date: DateTime!): CreateMessageResponse!
+  editMessage(messageID: String!, newMessageContents: String!): EditMessageResponse!
+  deleteMessage(messageID: String!): DeleteMessageResponse!
+}
+
+type CreateMessageResponse {
+  status: Status!
+  newMessage: Message!
+}
+
+type DeleteMessageResponse {
+  status: Status!
+}
+
+type EditMessageResponse {
+  status: Status!
 }
 
 input UserCredentials {
@@ -42,5 +57,6 @@ type Message {
   authorUsername: String!
   date: DateTime!
   chatID: String!
+  _id: String!
 }
 

@@ -1,7 +1,8 @@
 import { atom } from 'jotai'
+import type MessageData from '@/types/MessageData'
 
 
-const activeChatMessagesAtom = atom<{ loading?: boolean; errorMessage?: string; authorUsername: string; date: Date; contents: string; }[] | undefined>(undefined)
+const activeChatMessagesAtom = atom<MessageData[] | undefined>(undefined)
 
 export default activeChatMessagesAtom
 
