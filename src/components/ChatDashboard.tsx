@@ -12,6 +12,8 @@ import activeChatMessagesAtom from '@/jotaiAtoms/activeChatMessagesAtom'
 import { format } from 'date-fns'
 import DeleteIcon from '@/components/DeleteIcon'
 import type MessageData from '@/types/MessageData'
+import ChatSettingsDashboard from '@/components/ChatSettingsDashboard'
+import chatSettingsOpenedAtom from '@/jotaiAtoms/chatSettingsOpenedAtom'
 
 
 const leaveChatMutation = gql`
@@ -79,11 +81,10 @@ function LeaveIcon() {
 }
 
 export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
+	const [chatSettingsOpened, setChatSettingsOpened] = useAtom(chatSettingsOpenedAtom)
 	const [activeChatID, setActiveChatID] = useAtom(activeChatIDAtom)
-	const [settingsDropdownOpened, setSettingsDropdownOpened] = useState(false)
 	const [userChats, setUserChats] = useAtom(userChatsAtom)
 	const [leaveChat, leaveChatResponse] = useMutation(leaveChatMutation)
-	const settingsDropdownRef = useRef<any>(undefined)
 	const messagesQueryResponse = useQuery(messagesQuery, {
 		variables: {
 			chatID: activeChatID,
@@ -222,10 +223,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	}
 
 	const onSettingsClick = () => {
-		setSettingsDropdownOpened(!settingsDropdownOpened)
-		if (settingsDropdownRef?.current) {
-			settingsDropdownRef.current.blur()
-		}
+		setChatSettingsOpened(!chatSettingsOpened)
 	}
 
 	const onRenameChat = () => {
@@ -266,6 +264,12 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 				activeChatName = name
 			}
 		}
+	}
+
+	if (chatSettingsOpened) {
+		return (
+			<ChatSettingsDashboard sessionData={sessionData} activeChatName={activeChatName} />
+		)
 	}
 
 	return (
@@ -340,28 +344,10 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 					<span className="flex flex-grow justify-center font-bold">
 						{activeChatName}
 					</span>
-					<div tabIndex={0} className={"dropdown dropdown-top dropdown-end" + (settingsDropdownOpened ? '  dropdown-opened' : ' ')}>
+					<div tabIndex={0}>
 						<button className={"btn btn-primary btn-square"} onClick={onSettingsClick}>
 							<SettingsIcon />
 						</button>
-						<ul ref={settingsDropdownRef} tabIndex={0} className="dropdown-content menu bg-base-200 w-52 p-2 shadow">
-							<li>
-								<a className="flex items-center gap-2" onClick={onRenameChat}>
-									<EditIcon />
-									<span className="font-bold">
-										Rename chat
-									</span>
-								</a>
-							</li>
-							<li>
-								<a className="flex items-center gap-2 text-error" onClick={onLeaveChat}>
-									<LeaveIcon />
-									<span className="font-bold">
-										Leave chat
-									</span>
-								</a>
-							</li>
-						</ul>
 					</div>
 				</div>
 			</div>

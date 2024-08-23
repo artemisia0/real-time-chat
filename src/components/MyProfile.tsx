@@ -107,7 +107,7 @@ export default function MyProfile({ sessionData }: PropsWithSessionData) {
 		<div className="flex flex-col">
 			<div className="avatar" onClick={() => setIsCollapseOpened(!isCollapseOpened)}>
 				<div className="rounded">
-					<img src="/myprofile.jpg" alt="My profile image" />
+					<img src="/profile.png" alt="My profile image" />
 				</div>
 			</div>
 			<div className={collapseClassName}>

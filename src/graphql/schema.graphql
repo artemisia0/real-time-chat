@@ -3,6 +3,7 @@ scalar DateTime
 type Query {
   chats(username: String!): [Chat!]!
   messages(chatID: String!): [Message!]!
+  chatMembers(chatID: String!): [ChatMember!]!
 }
 
 type Mutation {
@@ -17,6 +18,11 @@ type Mutation {
   createMessage(contents: String!, authorUsername: String!, chatID: String!, date: DateTime!): CreateMessageResponse!
   editMessage(messageID: String!, newMessageContents: String!): EditMessageResponse!
   deleteMessage(messageID: String!): DeleteMessageResponse!
+}
+
+type ChatMember {
+  role: String!  # 'admin' | 'member' | 'creator'
+  username: String!
 }
 
 type CreateMessageResponse {

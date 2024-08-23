@@ -9,6 +9,7 @@ export default async function createChat(_: any, args: { name: string; creatorUs
 	const newUserChatRelation = new UserChatRelation({
 		username: args.creatorUsername,
 		chatID: newChat._id,
+		userRole: 'creator',
 	})
 	await newUserChatRelation.save()
 
