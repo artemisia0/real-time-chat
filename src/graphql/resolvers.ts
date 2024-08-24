@@ -11,6 +11,7 @@ import createMessage from '@/graphql/resolvers/mutation/createMessage'
 import editMessage from '@/graphql/resolvers/mutation/editMessage'
 import deleteMessage from '@/graphql/resolvers/mutation/deleteMessage'
 import chatMembers from '@/graphql/resolvers/query/chatMembers'
+import removeChatMember from '@/graphql/resolvers/mutation/removeChatMember'
 
 
 const resolvers = {
@@ -30,6 +31,7 @@ const resolvers = {
 		createMessage,
 		editMessage,
 		deleteMessage,
+		removeChatMember,
 	}
 }
 

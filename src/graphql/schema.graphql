@@ -18,6 +18,12 @@ type Mutation {
   createMessage(contents: String!, authorUsername: String!, chatID: String!, date: DateTime!): CreateMessageResponse!
   editMessage(messageID: String!, newMessageContents: String!): EditMessageResponse!
   deleteMessage(messageID: String!): DeleteMessageResponse!
+
+  removeChatMember(username: String!, chatID: String!): RemoveChatMemberResponse!
+}
+
+type RemoveChatMemberResponse {
+  status: Status!
 }
 
 type ChatMember {
