@@ -51,14 +51,15 @@ function ChatMemberInput({ chatID }: { chatID: string; }) {
 		if (!usernameInputRef?.current?.value) {
 			return;
 		}
+		const previousActiveChatMembers = [...activeChatMembers]
 		const newChatMember = {
 			username: usernameInputRef.current.value!,
 			role: 'member',
 		}
 		const updateState = () => {
 			setActiveChatMembers([
-				...(activeChatMembers!),
 				newChatMember,
+				...(activeChatMembers!),
 			])
 		}
 		updateState()
@@ -67,20 +68,38 @@ function ChatMemberInput({ chatID }: { chatID: string; }) {
 				chatID,
 				...newChatMember,
 			}
-		})
+		}).then(
+				(res: any) => {
+					if (res?.data?.addChatMember?.status?.ok === false) {
+						setActiveChatMembers(previousActiveChatMembers)
+					}
+				}
+			)
 	}
 
 	return (
 		<div className="flex flex-col items-center w-full bg-base-300 gap-2">
 			<div className="flex items-center w-full p-2 gap-2 bg-base-300">
-				<input className="input input-bordered grow" placeholder="Username" ref={usernameInputRef} />
-				<button className="flex justify-center items-center btn btn-square btn-primary" onClick={onSubmit}>
+				<input className="input input-bordered grow" placeholder="Username" ref={usernameInputRef} disabled={addChatMemberResponse.loading}/>
+				<button className="flex justify-center items-center btn btn-square btn-primary" onClick={onSubmit} disabled={addChatMemberResponse.loading}>
 					<PlusIcon />
 				</button>
 			</div>
-			{addChatMemberResponse?.error?.message && 
+			{addChatMemberResponse.loading &&
+				<span className="loading loading-dots" />
+			}
+			{(addChatMemberResponse?.error?.message || addChatMemberResponse?.data?.addChatMember?.status?.ok === false) && 
 				<div className="text-error font-bold">
-					{addChatMemberResponse.error.message!}
+					<span>
+						{addChatMemberResponse?.error?.message && 
+							addChatMemberResponse.error.message!
+						}
+					</span>
+					<span>
+						{addChatMemberResponse?.data?.addChatMember?.status?.ok === false &&
+							addChatMemberResponse.data.addChatMember.status.message!
+						}
+					</span>
 				</div>
 			}
 		</div>
