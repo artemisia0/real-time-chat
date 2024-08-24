@@ -4,10 +4,11 @@ import BackArrowIcon from '@/components/BackArrowIcon'
 import { useQuery, useMutation, gql } from '@apollo/client'
 import activeChatIDAtom from '@/jotaiAtoms/activeChatIDAtom'
 import type SessionData from '@/types/SessionData'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import DeleteIcon from '@/components/DeleteIcon'
 import activeChatMembersAtom from '@/jotaiAtoms/activeChatMembersAtom'
 import type ChatMemberData from '@/types/ChatMemberData'
+import PlusIcon from '@/components/PlusIcon'
 
 
 const chatMembersQuery = gql`
@@ -29,6 +30,62 @@ mutation RemoveChatMember($username: String!, $chatID: String!) {
 	}
 }
 `
+
+const addChatMemberMutation = gql`
+mutation AddChatMember($username: String!, $role: String!, $chatID: String!) {
+	addChatMember(username: $username, role: $role, chatID: $chatID) {
+		status {
+			ok
+			message
+		}
+	}
+}
+`
+
+function ChatMemberInput({ chatID }: { chatID: string; }) {
+	const [addChatMemberMutator, addChatMemberResponse] = useMutation(addChatMemberMutation)
+	const usernameInputRef = useRef<any>(undefined)
+	const [activeChatMembers, setActiveChatMembers] = useAtom(activeChatMembersAtom)
+
+	const onSubmit = () => {
+		if (!usernameInputRef?.current?.value) {
+			return;
+		}
+		const newChatMember = {
+			username: usernameInputRef.current.value!,
+			role: 'member',
+		}
+		const updateState = () => {
+			setActiveChatMembers([
+				...(activeChatMembers!),
+				newChatMember,
+			])
+		}
+		updateState()
+		addChatMemberMutator({
+			variables: {
+				chatID,
+				...newChatMember,
+			}
+		})
+	}
+
+	return (
+		<div className="flex flex-col items-center w-full bg-base-300 gap-2">
+			<div className="flex items-center w-full p-2 gap-2 bg-base-300">
+				<input className="input input-bordered grow" placeholder="Username" ref={usernameInputRef} />
+				<button className="flex justify-center items-center btn btn-square btn-primary" onClick={onSubmit}>
+					<PlusIcon />
+				</button>
+			</div>
+			{addChatMemberResponse?.error?.message && 
+				<div className="text-error font-bold">
+					{addChatMemberResponse.error.message!}
+				</div>
+			}
+		</div>
+	)
+}
 
 function UserDashboard({ role, username, chatID }: { role: string; username: string; chatID: string; }) {
 	const [hovered, setHovered] = useState(false)
@@ -101,14 +158,17 @@ export default function ChatSettingsDashboard({ activeChatName, sessionData }: {
 					))}
 				</div>
 			}
-			<div className="flex flex-col gap-2 max-w-[720px] w-full justify-center items-center">
-				{activeChatMembers && (activeChatMembers!).map(
-						(chatMember: ChatMemberData, index: number) => (
-							<UserDashboard username={chatMember.username} role={chatMember.role} key={index} chatID={activeChatID!} />
+			{!chatMembersQueryResponse.loading &&
+				<div className="flex flex-col gap-2 max-w-[720px] w-full justify-center items-center">
+					<ChatMemberInput chatID={activeChatID!} />
+					{activeChatMembers && (activeChatMembers!).map(
+							(chatMember: ChatMemberData, index: number) => (
+								<UserDashboard username={chatMember.username} role={chatMember.role} key={index} chatID={activeChatID!} />
+							)
 						)
-					)
-				}
-			</div>
+					}
+				</div>
+			}
 			<div className="flex flex-col w-full gap-2 max-w-[720px]">
 				<div className="flex w-full bg-neutral p-2 items-center">
 					<span className="flex flex-grow justify-center font-bold">

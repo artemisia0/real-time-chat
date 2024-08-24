@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 
 const UserChatRelationSchema = new mongoose.Schema({
 	username: String,
-	userRole: String,  // 'admin' | 'member' | 'creator'
+	role: String,  // 'admin' | 'member' | 'creator'
 	chatID: String,
 })
 
