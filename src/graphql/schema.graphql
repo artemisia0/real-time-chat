@@ -21,6 +21,11 @@ type Mutation {
 
   removeChatMember(username: String!, chatID: String!): RemoveChatMemberResponse!
   addChatMember(username: String!, chatID: String!, role: String!): AddChatMemberResponse!
+  updateChatMemberRole(username: String!, chatID: String!, role: String!): UpdateChatMemberRoleResponse!
+}
+
+type UpdateChatMemberRoleResponse {
+  status: Status!
 }
 
 type AddChatMemberResponse {

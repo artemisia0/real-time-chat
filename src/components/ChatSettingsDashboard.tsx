@@ -6,6 +6,7 @@ import activeChatIDAtom from '@/jotaiAtoms/activeChatIDAtom'
 import type SessionData from '@/types/SessionData'
 import { useState, useEffect, useRef } from 'react'
 import DeleteIcon from '@/components/DeleteIcon'
+import EditIcon from '@/components/EditIcon'
 import activeChatMembersAtom from '@/jotaiAtoms/activeChatMembersAtom'
 import type ChatMemberData from '@/types/ChatMemberData'
 import PlusIcon from '@/components/PlusIcon'
@@ -48,10 +49,13 @@ function ChatMemberInput({ chatID }: { chatID: string; }) {
 	const [activeChatMembers, setActiveChatMembers] = useAtom(activeChatMembersAtom)
 
 	const onSubmit = () => {
+		if (!activeChatMembers) {
+			return;
+		}
 		if (!usernameInputRef?.current?.value) {
 			return;
 		}
-		const previousActiveChatMembers = [...activeChatMembers]
+		const previousActiveChatMembers = [...(activeChatMembers!)]
 		const newChatMember = {
 			username: usernameInputRef.current.value!,
 			role: 'member',
@@ -106,10 +110,22 @@ function ChatMemberInput({ chatID }: { chatID: string; }) {
 	)
 }
 
-function UserDashboard({ role, username, chatID }: { role: string; username: string; chatID: string; }) {
-	const [hovered, setHovered] = useState(false)
+const updateChatMemberRoleMutation = gql`
+mutation UpdateChatMemberRole($chatID: String!, $username: String!, $role: String!) {
+	updateChatMemberRole(chatID: $chatID, username: $username, role: $role) {
+		status {
+			ok
+			message
+		}
+	}
+}
+`
+
+function UserDashboard({ role, username, chatID, indexOfThis }: { role: string; username: string; chatID: string; indexOfThis: number; }) {
 	const [activeChatMembers, setActiveChatMembers] = useAtom(activeChatMembersAtom)
 	const [removeChatMemberMutator, removeChatMemberResponse] = useMutation(removeChatMemberMutation)
+	const chatMemberEditDropdownRef = useRef<any>(undefined)
+	const [updateChatMemberRoleMutator, updateChatMemberRoleResponse] = useMutation(updateChatMemberRoleMutation)
 
 	const onChatMemberRemoval = () => {
 		if (activeChatMembers) {
@@ -123,13 +139,59 @@ function UserDashboard({ role, username, chatID }: { role: string; username: str
 		})  // possible errors should be handled
 	}
 
-	return (
-		<button className="p-2 flex items-center justify-between w-full relative hover:bg-error bg-base-300" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={onChatMemberRemoval}>
-			{hovered &&
-				<div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-					<DeleteIcon />
-				</div>
+	const onChatMemberChangeRole = (newRole: string) => {
+		if (!activeChatMembers) {
+			return;
+		}
+		if (chatMemberEditDropdownRef.current) {
+			(chatMemberEditDropdownRef.current!).blur()
+		}
+		const updateState = () => {
+			setActiveChatMembers([
+				...(activeChatMembers!).slice(0, indexOfThis),
+				{
+					username,
+					role: newRole,
+				},
+				...(activeChatMembers!).slice(indexOfThis+1)
+			])
+		}
+		updateState()
+
+		updateChatMemberRoleMutator({
+			variables: {
+				chatID,
+				username,
+				role: newRole,
 			}
+		}).then(
+				(res: any) => {
+					if (res.error?.message) {
+						console.error(res.error.message!)
+					}
+					if (res.data?.updateChatMemberRole?.status?.ok === false) {
+						console.error(res.data.updateChatMemberRole.status.message!)
+					}
+					if (res.error?.graphQLErrors) {
+						console.error(JSON.stringify(res.error.graphQLErrors!))
+					}
+				}
+			)
+	}
+
+	const chatMemberEditMenuItems = [
+		{
+			onClick: () => onChatMemberChangeRole('member'),
+			label: 'Member',
+		},
+		{
+			onClick: () => onChatMemberChangeRole('admin'),
+			label: 'Admin',
+		},
+	]
+
+	return (
+		<div className="p-2 flex items-center justify-between w-full bg-base-300">
 			<div className="flex gap-2 items-center">
 				<div className="w-8 h-8">
 					<img src="/profile.png" alt="User profile image" />
@@ -138,10 +200,31 @@ function UserDashboard({ role, username, chatID }: { role: string; username: str
 					{ username }
 				</span>
 			</div>
-			<span className="text-sm">
-				{ role }
-			</span>
-		</button>
+			<div className="flex items-center gap-2">
+				<span className="text-sm">
+					{ role }
+				</span>
+				<div tabIndex={0} className="dropdown dropdown-left btn btn-square btn-primary btn-sm flex items-center justify-center">
+					<EditIcon />
+					<ul tabIndex={0} className="dropdown-content menu shadow z-[1] w-52 p-2 bg-base-200" ref={chatMemberEditDropdownRef}>
+						{chatMemberEditMenuItems.map(
+							(item: any, index: number) => (
+								<li key={index} onClick={item.onClick}>
+									<a>
+										{item.label}
+									</a>
+								</li>
+							)
+						)}
+					</ul>
+				</div>
+				<div className="flex justify-center items-center">
+					<button className="btn btn-square btn-primary btn-sm" onClick={onChatMemberRemoval}>
+						<DeleteIcon />
+					</button>
+				</div>
+			</div>
+		</div>
 	)
 }
 
@@ -182,7 +265,7 @@ export default function ChatSettingsDashboard({ activeChatName, sessionData }: {
 					<ChatMemberInput chatID={activeChatID!} />
 					{activeChatMembers && (activeChatMembers!).map(
 							(chatMember: ChatMemberData, index: number) => (
-								<UserDashboard username={chatMember.username} role={chatMember.role} key={index} chatID={activeChatID!} />
+								<UserDashboard username={chatMember.username} role={chatMember.role} key={index} chatID={activeChatID!} indexOfThis={index} />
 							)
 						)
 					}
