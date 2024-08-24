@@ -115,7 +115,7 @@ export default function MyProfile({ sessionData }: PropsWithSessionData) {
 					{username}
 				</div>
 				<div className="collapse-content p-0">
-					<ul className="menu">
+					<ul className="menu bg-base-300 p-2">
 						<ThemeControllerMenuItem />
 						{profileActions.map(
 							(action, index) => (
