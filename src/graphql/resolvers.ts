@@ -36,6 +36,14 @@ const resolvers = {
 		removeChatMember,
 		addChatMember,
 		updateChatMemberRole,
+	},
+	Subscription: {
+		newMessage: {
+			subscribe: (_: any, { chatID }: { chatID: string }, context: object) => {
+				const { pubsub } = context as any
+				return pubsub.asyncIterator([`NEW_MESSAGE_${chatID}`])
+			}
+		}
 	}
 }
 

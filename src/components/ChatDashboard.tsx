@@ -6,7 +6,7 @@ import AttachIcon from '@/components/AttachIcon'
 import SettingsIcon from '@/components/SettingsIcon'
 import { useState, useRef, useEffect } from 'react'
 import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
-import { useMutation, useQuery, gql } from '@apollo/client'
+import { useMutation, useQuery, gql, useSubscription } from '@apollo/client'
 import EditIcon from '@/components/EditIcon'
 import activeChatMessagesAtom from '@/jotaiAtoms/activeChatMessagesAtom'
 import { format } from 'date-fns'
@@ -72,6 +72,17 @@ mutation DeleteMessage($messageID: String!) {
 }
 `
 
+const newMessageSubscription = gql`
+subscription NewMessage($chatID: String!) {
+	newMessage(chatID: $chatID) {
+		authorUsername
+		_id
+		date
+		contents
+	}
+}
+`
+
 function LeaveIcon() {
 	return (
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -98,6 +109,30 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	const [indexOfMessageToEdit, setIndexOfMessageToEdit] = useState<number | undefined>(undefined)
 	const [editMessageMutator, editMessageMutatorResponse] = useMutation(editMessageMutation)
 	const [deleteMessageMutator, deleteMessageMutatorResponse] = useMutation(deleteMessageMutation)
+	const newMessageResponse = useSubscription(newMessageSubscription, {
+		variables: {
+			chatID: activeChatID!,
+		}
+	})
+	const [lastNewMessageID, setLastNewMessageID] = useState<number | undefined>(undefined)
+
+	useEffect(
+		() => {
+			const onNewMessage = (data: MessageData) => {
+				setActiveChatMessages([
+					...(activeChatMessages!),
+					data
+				])
+			}
+			if (!newMessageResponse.loading && newMessageResponse.data?.newMessage) {
+				const data = newMessageResponse.data.newMessage!
+				if (data._id !== lastNewMessageID) {
+					setLastNewMessageID(data._id)
+					onNewMessage(data)
+				}
+			}
+		}, [newMessageResponse, lastNewMessageID, activeChatMessages, setActiveChatMessages]
+	)
 
 	const onSubmitEditedMessage = (index: number) => {
 		const editedContents = messageInputRef.current?.value!

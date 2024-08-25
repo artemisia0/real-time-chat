@@ -1,5 +1,9 @@
 scalar DateTime
 
+type Subscription {
+  newMessage(chatID: String!): Message!
+}
+
 type Query {
   chats(username: String!): [Chat!]!
   messages(chatID: String!): [Message!]!
