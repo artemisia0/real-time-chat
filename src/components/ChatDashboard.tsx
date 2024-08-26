@@ -16,6 +16,14 @@ import ChatSettingsDashboard from '@/components/ChatSettingsDashboard'
 import chatSettingsOpenedAtom from '@/jotaiAtoms/chatSettingsOpenedAtom'
 
 
+function CancelIcon() {
+	return (
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+</svg>
+	)
+}
+
 const leaveChatMutation = gql`
 mutation LeaveChat($username: String!, $chatID: String!) {
 	leaveChat(username: $username, chatID: $chatID) {
@@ -268,6 +276,13 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 		}
 	}
 
+	const onEditMessageCancel = () => {
+		setIndexOfMessageToEdit(undefined)
+		if (messageInputRef.current) {
+			(messageInputRef.current!).value = ''
+		}
+	}
+
 	const onLeaveChat = () => {
 		onSettingsClick()
 		if (!sessionData?.username || !activeChatID || !userChats) {
@@ -327,7 +342,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 										{format(msg.date, 'hh:mm:ss yyyy/MM/dd')}
 									</span>
 								</div>
-								<button className="chat-bubble flex flex-col justify-center gap-2" onFocus={() => setIndexOfFocusedMessage(index)} onBlur={() => setIndexOfFocusedMessage(undefined)} disabled={msg._id ? false : true}>
+								<button className="chat-bubble flex flex-col justify-center gap-2" onFocus={() => setIndexOfFocusedMessage(msg.authorUsername === sessionData.username ? index : undefined)} onBlur={() => setIndexOfFocusedMessage(undefined)} disabled={msg._id ? false : true}>
 									<span className="break-words relative">
 										<span className={(indexOfFocusedMessage === index ? 'blur-sm' : ' ')}>
 											{msg.contents}
@@ -373,8 +388,12 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 					<button className="btn btn-primary btn-square" onClick={indexOfMessageToEdit === undefined ? onSendMessage : () => onSubmitEditedMessage(indexOfMessageToEdit!)}>
 						{indexOfMessageToEdit === undefined ? <SendIcon /> : <EditIcon />}
 					</button>
-					<button className="btn btn-primary btn-square" disabled={indexOfMessageToEdit !== undefined}>
-						<AttachIcon />
+					<button className="btn btn-primary btn-square" onClick={indexOfMessageToEdit ? onEditMessageCancel : undefined}>
+						{indexOfMessageToEdit ? (
+							<CancelIcon />
+						): (
+							<AttachIcon />
+						)}
 					</button>
 				</div>
 				<div className="flex w-full bg-neutral p-2 items-center">
