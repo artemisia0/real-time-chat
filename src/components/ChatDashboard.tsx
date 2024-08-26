@@ -14,6 +14,7 @@ import DeleteIcon from '@/components/DeleteIcon'
 import type MessageData from '@/types/MessageData'
 import ChatSettingsDashboard from '@/components/ChatSettingsDashboard'
 import chatSettingsOpenedAtom from '@/jotaiAtoms/chatSettingsOpenedAtom'
+import needsScrollingIntoViewOfLastMessageAtom from '@/jotaiAtoms/needsScrollingIntoViewOfLastMessageAtom'
 
 
 function CancelIcon() {
@@ -100,6 +101,7 @@ function LeaveIcon() {
 }
 
 export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
+	const [needsScrollingIntoViewOfLastMessage, setNeedsScrollingIntoViewOfLastMessage] = useAtom(needsScrollingIntoViewOfLastMessageAtom)
 	const [chatSettingsOpened, setChatSettingsOpened] = useAtom(chatSettingsOpenedAtom)
 	const [activeChatID, setActiveChatID] = useAtom(activeChatIDAtom)
 	const [userChats, setUserChats] = useAtom(userChatsAtom)
@@ -187,10 +189,11 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 
 	useEffect(
 		() => {
-			if (lastMessageRef.current) {
+			if (lastMessageRef.current && needsScrollingIntoViewOfLastMessage) {
 				lastMessageRef.current.scrollIntoView({ behaviour: 'smooth', block: 'center' })
 			}
-		}, [activeChatMessages]
+			setNeedsScrollingIntoViewOfLastMessage(false)
+		}, [activeChatMessages, needsScrollingIntoViewOfLastMessage, setNeedsScrollingIntoViewOfLastMessage]
 	)
 
 	useEffect(
@@ -205,6 +208,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	)
 
 	const onSendMessage = () => {
+		setNeedsScrollingIntoViewOfLastMessage(true)
 		const messageContents = messageInputRef.current?.value
 		if (messageContents && activeChatID && sessionData.username) {
 			// add message to activeChatMessages as a loading one (or processing one)
