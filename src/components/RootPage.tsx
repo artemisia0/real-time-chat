@@ -1,6 +1,5 @@
 'use client'
 
-import MyProfile from '@/components/MyProfile'
 import SignInModal from '@/components/SignInModal'
 import SignUpModal from '@/components/SignUpModal'
 import SignOutModal from '@/components/SignOutModal'
@@ -11,22 +10,42 @@ import ChatsList from '@/components/ChatsList'
 import ChatDashboard from '@/components/ChatDashboard'
 import CreateChatModal from '@/components/CreateChatModal'
 import RenameChatModal from '@/components/RenameChatModal'
+import SignInMenuItem from '@/components/SignInMenuItem'
+import SignUpMenuItem from '@/components/SignUpMenuItem'
 
 
 export default function RootPage({ sessionData }: PropsWithSessionData) {
+	if (sessionData.username == null) {
+		return (
+			<ApolloProvider client={gqlClient}>
+				<div className="flex justify-center items-center h-dvh text-xl">
+					<div className="flex flex-col justify-center items-center gap-8">
+						<h2 className="font-bold text-2xl">
+							Real-time chat
+						</h2>
+						<ul className="menu p-2 w-52 shadow bg-base-200">
+							<SignInMenuItem />
+							<SignUpMenuItem />
+							<SignInModal />
+							<SignUpModal />
+						</ul>
+					</div>
+				</div>
+			</ApolloProvider>
+		)
+	}
+
 	return (
 		<ApolloProvider client={gqlClient}>
 			<div className="drawer sm:drawer-open">
 				<input id="main-drawer" type="checkbox" className="drawer-toggle" />
 				<div className="drawer-content p-2 h-dvh">
-					<label htmlFor="main-drawer" className="btn btn-md btn-circle sm:hidden absolute left-4 top-4 z-60">
+					<label htmlFor="main-drawer" className="btn btn-md btn-circle sm:hidden absolute left-4 bottom-4 z-[5]">
 						<BurgerMenuIcon />
 					</label>
 					{ sessionData?.username &&
 						<ChatDashboard sessionData={sessionData} />
 					}
-					<SignInModal />
-					<SignUpModal />
 					<SignOutModal />
 					{sessionData?.username &&
 						<>
@@ -38,7 +57,6 @@ export default function RootPage({ sessionData }: PropsWithSessionData) {
 				<div className="drawer-side min-h-screen">
 					<label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
 					<div className="bg-base-200 text-base-content min-h-full w-64 p-2">
-						<MyProfile sessionData={sessionData} />
 						{ sessionData?.username &&
 							<ChatsList sessionData={sessionData} />
 						}

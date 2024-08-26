@@ -82,8 +82,8 @@ function ChatMemberInput({ chatID }: { chatID: string; }) {
 	}
 
 	return (
-		<div className="flex flex-col items-center w-full bg-base-300 gap-2">
-			<div className="flex items-center w-full p-2 gap-2 bg-base-300">
+		<div className="flex flex-col items-center w-full gap-2 bg-base-200">
+			<div className="flex items-center w-full p-2 gap-2">
 				<input className="input input-bordered grow" placeholder="Username" ref={usernameInputRef} disabled={addChatMemberResponse.loading}/>
 				<button className="flex justify-center items-center btn btn-square btn-primary" onClick={onSubmit} disabled={addChatMemberResponse.loading}>
 					<PlusIcon />
@@ -191,7 +191,7 @@ function UserDashboard({ role, username, chatID, indexOfThis }: { role: string; 
 	]
 
 	return (
-		<div className="p-2 flex items-center justify-between w-full bg-base-300">
+		<div className="p-2 flex items-center justify-between w-full bg-base-200">
 			<div className="flex gap-2 items-center">
 				<div className="w-8 h-8">
 					<img src="/profile.png" alt="User profile image" />
@@ -206,7 +206,7 @@ function UserDashboard({ role, username, chatID, indexOfThis }: { role: string; 
 				</span>
 				<div tabIndex={0} className="dropdown dropdown-left btn btn-square btn-primary btn-sm flex items-center justify-center">
 					<EditIcon />
-					<ul tabIndex={0} className="dropdown-content menu shadow z-[1] w-52 p-2 bg-base-200" ref={chatMemberEditDropdownRef}>
+					<ul tabIndex={0} className="dropdown-content menu shadow z-[1] w-52 p-2 bg-base-300" ref={chatMemberEditDropdownRef}>
 						{chatMemberEditMenuItems.map(
 							(item: any, index: number) => (
 								<li key={index} onClick={item.onClick}>

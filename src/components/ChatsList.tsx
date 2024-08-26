@@ -5,6 +5,7 @@ import PlusIcon from '@/components/PlusIcon'
 import { gql, useQuery } from '@apollo/client'
 import { useState, useEffect } from 'react'
 import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
+import SignOutMenuItem from '@/components/SignOutMenuItem'
 
 
 const chatsQuery = gql`
@@ -54,6 +55,9 @@ export default function ChatsList({ sessionData }: PropsWithSessionData) {
 	return (
 		<ul className="menu">
 			{sessionData?.username &&
+				<SignOutMenuItem />
+			}
+			{sessionData?.username &&
 				<li>
 					<a className="flex items-center gap-2" onClick={onCreateChat}>
 						<PlusIcon />
@@ -62,6 +66,9 @@ export default function ChatsList({ sessionData }: PropsWithSessionData) {
 						</span>
 					</a>
 				</li>
+			}
+			{sessionData?.username &&
+				<div className="divider h-1" />
 			}
 			{chatsQueryResponse.error &&
 				chatsQueryResponse.error.graphQLErrors.map(

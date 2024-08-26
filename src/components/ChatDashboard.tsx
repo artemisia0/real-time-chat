@@ -288,7 +288,9 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 
 	if (!activeChatID) {
 		return (
-			<div />
+			<span className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold">
+				{"Choose a chat"}
+			</span>
 		)
 	}
 	
@@ -315,7 +317,7 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 						(msg: MessageData, index: number) => (
 							<div key={index} className={"flex flex-col gap-2 chat" + (msg.authorUsername === sessionData?.username ? ' chat-end' : ' chat-start')} ref={index === activeChatMessages.length-1 ? lastMessageRef : undefined}>
 								<div className="flex flex-col gap-1 text-sm">
-									<span>
+									<span className="text-sm text-success">
 										{msg.authorUsername !== sessionData.username
 											? msg.authorUsername
 											: ''
