@@ -1,4 +1,7 @@
 {
+	"type": "module",
+	"module": "ESNext",
+	"target": "ES2020",
   "name": "real-time-chat",
   "version": "0.1.0",
   "private": true,

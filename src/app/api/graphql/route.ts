@@ -14,46 +14,34 @@ const schema = makeExecutableSchema({
   resolvers,
 });
 
-const apolloServer = new ApolloServer({
+const apolloServer = new (ApolloServer as any)({
   schema,
+	csrfPrevention: false,
+	cors: false,
 });
 
-// Create an HTTP server and WebSocket server if not already running
-const startServers = (() => {
-  let started = false;
-  
-  return () => {
-    if (!started) {
-      const httpServer = createServer();
-      const wsServer = new WebSocketServer({
-        server: httpServer,
-        path: '/api/graphql',
-      });
+const httpServer = createServer();
+const wsServer = new WebSocketServer({
+	server: httpServer,
+	path: '/api/graphql',
+});
 
-      wsServer.on('connection', () => {
-        console.log('New WebSocket connection');
-      });
+wsServer.on('connection', () => {
+	console.log('New WebSocket connection');
+});
 
-      wsServer.on('error', (err: any) => {
-        console.error('WebSocket server error: ', err);
-      });
+wsServer.on('error', (err: any) => {
+	console.error('WebSocket server error: ', err);
+});
 
-			/* eslint-disable react-hooks/rules-of-hooks */
-      useServer({ schema, context }, wsServer);
+/* eslint-disable react-hooks/rules-of-hooks */
+useServer({ schema, context }, wsServer);
 
-      httpServer.listen(3002, () => {
-        console.log('(WebSocket) server is listening on port 3002');
-      });
-
-      started = true;
-    }
-  };
-})();
+await new Promise((resolve, reject) => httpServer.listen(3002, resolve as any))
 
 const handler = startServerAndCreateNextHandler<NextRequest>(apolloServer, {
   context,
 });
 
-startServers(); // Ensure servers are started only once
-
 export { handler as GET, handler as POST };
+
