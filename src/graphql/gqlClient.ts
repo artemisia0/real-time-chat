@@ -4,7 +4,10 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 
 
-const production = (process.env.NEXT_PUBLIC_ENV_PRODUCTION || '') === 'true'
+const production = process.env.NEXT_PUBLIC_ENV_PRODUCTION == 'true'
+
+console.log("PRODUCTION MODE = ", production.toString())
+console.log("HTTP_SERVER_PRODUCTION_URI = ", process.env.NEXT_PUBLIC_HTTP_SERVER_PRODUCTION_URI)
 
 // Create an HTTP link for regular queries and mutations
 const httpLink = new HttpLink({
