@@ -48,7 +48,7 @@ useServer({ schema, context }, wsServer);
 const startServer = async () => {
 	await apolloServer.start()
 	
-	app.use('/api/graphql', cors<cors.CorsRequest>(), express.json(), expressMiddleware(apolloServer, { context }))
+	app.use('/api/graphql', cors({ origin: '*', credentials: true }), express.json(), expressMiddleware(apolloServer, { context }))
 
 	await new Promise((resolve, reject) => httpServer.listen({ port: 3002 }, () => resolve(undefined)))
 	console.log("Server listens on port 3002")
