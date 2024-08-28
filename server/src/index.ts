@@ -50,8 +50,13 @@ const startServer = async () => {
 	
 	app.use('*', cors<cors.CorsRequest>(), express.json(), expressMiddleware(apolloServer, { context }))
 
-	await new Promise((resolve, reject) => httpServer.listen({ port: 3002 }, () => resolve(undefined)))
-	console.log("Server listens on port 3002")
+	app.use(cors<cors.CorsRequest>({
+		origin: ['http://localhost:3000', 'https://real-time-chat-production-99c6.up.railway.app:443'],
+		credentials: true
+	}))
+
+	await new Promise((resolve, reject) => httpServer.listen({ port: 4000 }, () => resolve(undefined)))
+	console.log("Server listens on port 4000")
 }
 
 startServer()

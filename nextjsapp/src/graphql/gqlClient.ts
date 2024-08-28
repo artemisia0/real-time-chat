@@ -4,15 +4,17 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 
 
+const production = true
+
 // Create an HTTP link for regular queries and mutations
 const httpLink = new HttpLink({
-  uri: "http://localhost:3002/api/graphql",
+  uri: production ? "https://real-time-chat-production-99c6.up.railway.app:4000/api/graphql" : "http://localhost:4000/api/graphql",
 });
 
 // Create a WebSocket link for subscriptions
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: "ws://localhost:3002/api/graphql",
+    url: production ? "wss://real-time-chat-production-99c6.up.railway.app:4000/api/graphql" : "ws://localhost:4000/api/graphql",
   })
 );
 
