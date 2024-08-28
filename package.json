@@ -1,0 +1,11 @@
+{
+  "name": "monorepo",
+  "scripts": {
+    "build": "npm run build:nextjs && npm run build:server",
+    "build:nextjs": "cd nextjsapp && npm i && npm run build",
+    "build:server": "cd server && npm i && npm run build",
+    "start": "npm run start:server && npm run start:nextjs",
+    "start:server": "cd server && npm run serve",
+    "start:nextjs": "cd nextjsapp && npm start"
+  }
+}
