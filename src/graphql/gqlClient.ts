@@ -6,7 +6,7 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 const link = new GraphQLWsLink(
   createClient({
     url: process.env.NEXT_PUBLIC_ENV_PRODUCTION 
-         ? process.env.NEXT_PUBLIC_GRAPHQL_API_PRODUCTION_URI 
+         ? process.env.NEXT_PUBLIC_GRAPHQL_API_PRODUCTION_URI as string
          : "ws://localhost:4000/graphql",
     on: {
       connected: () => console.log("Connected to the WebSocket server"),
