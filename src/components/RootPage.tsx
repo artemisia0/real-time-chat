@@ -3,18 +3,30 @@
 import SignInModal from '@/components/SignInModal'
 import SignUpModal from '@/components/SignUpModal'
 import SignOutModal from '@/components/SignOutModal'
-import type PropsWithSessionData from '@/types/PropsWithSessionData'
+import type SessionData from '@/types/SessionData'
 import { ApolloProvider } from '@apollo/client'
-import gqlClient from '@/graphql/gqlClient'
+import createGqlClient from '@/graphql/createGqlClient'
 import ChatsList from '@/components/ChatsList'
 import ChatDashboard from '@/components/ChatDashboard'
 import CreateChatModal from '@/components/CreateChatModal'
 import RenameChatModal from '@/components/RenameChatModal'
 import SignInMenuItem from '@/components/SignInMenuItem'
 import SignUpMenuItem from '@/components/SignUpMenuItem'
+import { useEffect, useState } from 'react'
 
 
-export default function RootPage({ sessionData }: PropsWithSessionData) {
+export default function RootPage({ sessionData, defaultSessionToken }: { sessionData: SessionData; defaultSessionToken: string; }) {
+	const [sessionToken, setSessionToken] = useState<string | undefined>(undefined)
+
+	useEffect(
+		() => {
+			if (window?.localStorage) {
+				setSessionToken(localStorage.getItem('sessionToken')!)
+			}
+		}, [localStorage]
+	)
+
+	const gqlClient = createGqlClient(sessionToken ?? defaultSessionToken)
 	if (sessionData.username == null) {
 		return (
 			<ApolloProvider client={gqlClient}>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import gqlClient from '@/graphql/gqlClient'
 import { useMutation, gql } from '@apollo/client'
 import ErrorIcon from '@/components/ErrorIcon'
 import SuccessIcon from '@/components/SuccessIcon'
@@ -17,8 +16,11 @@ mutation SignIn($username: String!, $password: String!) {
 			password: $password
 		}
 	) {
-		ok
-		message
+		status {
+			ok
+			message
+		}
+		sessionToken
 	}
 }
 `
@@ -46,7 +48,8 @@ export default function SignInModal() {
 			}
 		).then(
 			(res: any) => {
-				if (res.data?.signIn?.ok && window?.location) {
+				if (res.data?.signIn?.status?.ok && window?.location) {
+					localStorage.setItem('sessionToken', res?.data?.signIn?.sessionToken!)
 					window.location.reload()
 				}
 			}
@@ -72,13 +75,13 @@ export default function SignInModal() {
 								<span>{signInResponse.error.message ?? ''}</span>
 							</div>
 						}
-						{signInResponse.data?.signIn?.message &&
-							<div role="alert" className={"alert " + (signInResponse.data?.signIn?.ok ? 'alert-success' : 'alert-error')}>
-								{signInResponse.data?.signIn?.ok
+						{signInResponse.data?.signIn?.status?.message &&
+							<div role="alert" className={"alert " + (signInResponse.data?.signIn?.status?.ok ? 'alert-success' : 'alert-error')}>
+								{signInResponse.data?.signIn?.status?.ok
 									? <SuccessIcon />
 									: <ErrorIcon />
 								}
-								{signInResponse.data?.signIn?.message}
+								{signInResponse.data?.signIn?.status?.message}
 							</div>
 						}
 					</div>

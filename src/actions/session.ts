@@ -1,37 +1,43 @@
-import { getIronSession } from 'iron-session'
+import { sealData, unsealData } from 'iron-session'
 import type SessionData from '@/types/SessionData'
-import { cookies } from 'next/headers'
 
 
-export async function getSessionData(): Promise<SessionData> {
-	const session = await getSession()
-	return JSON.parse(JSON.stringify(session))
+const ttl = 7 * 24 * 60 * 60  // 1 week
+
+function getSessionSecret(): string {
+	if (!process.env.SESSION_SECRET) {
+		console.error('SESSION_SECRET is not set.')
+		process.exit(1)
+	}
+	return process.env.SESSION_SECRET!
 }
 
-export async function getSession() {
-	if (!process.env.IRON_SESSION_PASSWORD) {
-		console.error('IRON_SESSION_PASSWORD is not set.')
-		process.exit(1)
-	}
-	if (!process.env.IRON_SESSION_COOKIE_NAME) {
-		console.error('IRON_SESSION_COOKIE_NAME is not set.')
-		process.exit(1)
-	}
-	const session = await getIronSession(cookies(), {
-		password: process.env.IRON_SESSION_PASSWORD!,
-		cookieName: process.env.IRON_SESSION_COOKIE_NAME!,
+export async function getSessionData(sessionToken: string)
+: Promise<SessionData> {
+	const session = await unsealData<SessionData>(
+		sessionToken,
+		{
+			password: getSessionSecret(),
+			ttl,
+		}
+	)
+	return { ...session }
+}
+
+export async function getSessionToken(sessionData: SessionData)
+: Promise<string> {
+	const sessionToken = await sealData(sessionData, {
+		password: getSessionSecret(),
+		ttl,
 	})
-	return session
+	return sessionToken
 }
 
-export async function createSession(sessionData: SessionData) {
-	const session = await getSession() as any
-	Object.assign(session, sessionData)
-	await session.save()
-}
-
-export async function deleteSession() {
-	const session = await getSession()
-	session.destroy()
+export async function getDefaultSessionToken(): Promise<string> {
+	const token = await getSessionToken({
+		username: undefined,
+		userRole: undefined,
+	})
+	return token
 }
 

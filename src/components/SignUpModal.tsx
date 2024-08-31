@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import gqlClient from '@/graphql/gqlClient'
 import { useMutation, gql } from '@apollo/client'
 import ErrorIcon from '@/components/ErrorIcon'
 import SuccessIcon from '@/components/SuccessIcon'
