@@ -1,3 +1,6 @@
+'use server'
+import 'server-only'
+
 import { sealData, unsealData } from 'iron-session'
 import type SessionData from '@/types/SessionData'
 

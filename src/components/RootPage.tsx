@@ -13,16 +13,28 @@ import RenameChatModal from '@/components/RenameChatModal'
 import SignInMenuItem from '@/components/SignInMenuItem'
 import SignUpMenuItem from '@/components/SignUpMenuItem'
 import { useEffect, useState } from 'react'
+import { getSessionData } from '@/actions/session'
 
 
-export default function RootPage({ sessionData, defaultSessionToken }: { sessionData: SessionData; defaultSessionToken: string; }) {
+export default function RootPage({ defaultSessionToken }: { defaultSessionToken: string; }) {
 	const [sessionToken, setSessionToken] = useState<string | undefined>(undefined)
+	const [sessionData, setSessionData] = useState<SessionData>({
+		username: undefined,
+		userRole: undefined,
+	})
 
 	useEffect(
 		() => {
-			if (window?.localStorage) {
-				setSessionToken(localStorage.getItem('sessionToken')!)
+			const doAsyncWork = async () => {
+				if (window?.localStorage) {
+					const tok = localStorage.getItem('sessionToken')
+					if (tok) {
+						setSessionToken(tok)
+						setSessionData(await getSessionData(tok))
+					}
+				}
 			}
+			doAsyncWork()
 		}, [localStorage]
 	)
 

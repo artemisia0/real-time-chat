@@ -7,8 +7,7 @@ import WarningIcon from '@/components/WarningIcon'
 const signOutMutation = gql`
 mutation SignOut {
 	signOut {
-		ok
-		message
+		sessionToken
 	}
 }
 `
@@ -19,7 +18,10 @@ export default function SignOutModal() {
 	const onConfirm = () => {
 		signOut().then(
 			(res: any) => {
-				if (res.data?.signOut?.ok && window?.location) {
+				if (window?.localStorage) {
+					localStorage.setItem('sessionToken', res?.data?.signOut?.sessionToken!)
+				}
+				if (window?.location) {
 					window.location.reload()
 				}
 			}
@@ -45,17 +47,6 @@ export default function SignOutModal() {
 								</span>
 							</span>
 						</div>
-						{signOutResponse.data?.signOut?.message &&
-							<div role="alert" className={"alert " + (signOutResponse.data?.signOut?.ok ? 'alert-success' : 'alert-error')}>
-								{signOutResponse.data?.signOut?.ok
-									? <SuccessIcon />
-									: <ErrorIcon />
-								}
-								<span>
-									{signOutResponse.data?.signOut?.message}
-								</span>
-							</div>
-						}
 					</div>
 					<div className="modal-action">
 						<form method="dialog">
