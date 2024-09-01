@@ -10,7 +10,17 @@ import EditIcon from '@/components/EditIcon'
 import activeChatMembersAtom from '@/jotaiAtoms/activeChatMembersAtom'
 import type ChatMemberData from '@/types/ChatMemberData'
 import PlusIcon from '@/components/PlusIcon'
+import userChatsAtom from '@/jotaiAtoms/userChatsAtom'
+import activeChatMessagesAtom from '@/jotaiAtoms/activeChatMessagesAtom'
 
+
+function LeaveIcon() {
+	return (
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+</svg>
+	)
+}
 
 const chatMembersQuery = gql`
 query ChatMembers($chatID: String!) {
@@ -117,6 +127,15 @@ mutation UpdateChatMemberRole($chatID: String!, $username: String!, $role: Strin
 			ok
 			message
 		}
+	}
+}
+`
+
+const leaveChatMutation = gql`
+mutation LeaveChat($username: String!, $chatID: String!) {
+	leaveChat(username: $username, chatID: $chatID) {
+		ok
+		message
 	}
 }
 `
@@ -230,13 +249,36 @@ function UserDashboard({ role, username, chatID, indexOfThis }: { role: string; 
 
 export default function ChatSettingsDashboard({ activeChatName, sessionData }: { activeChatName: string; sessionData: SessionData; }) {
 	const [chatSettingsOpened, setChatSettingsOpened] = useAtom(chatSettingsOpenedAtom)
-	const activeChatID = useAtomValue(activeChatIDAtom)
+	const [activeChatID, setActiveChatID] = useAtom(activeChatIDAtom)
+	const [userChats, setUserChats] = useAtom(userChatsAtom)
+	const [leaveChat, leaveChatResponse] = useMutation(leaveChatMutation)
+	const [activeChatMessages, setActiveChatMessages] = useAtom(activeChatMessagesAtom)
 	const chatMembersQueryResponse = useQuery(chatMembersQuery, {
 		variables: {
 			chatID: activeChatID!,
 		}
 	})
 	const [activeChatMembers, setActiveChatMembers] = useAtom(activeChatMembersAtom)
+
+	const onLeaveChat = () => {
+		if (!sessionData?.username || !activeChatID || !userChats) {
+			return;
+		}
+		const filteredUserChats = userChats.filter((chat) => chat._id !== activeChatID)
+		setUserChats(filteredUserChats)
+		leaveChat({
+			variables: {
+				username: sessionData.username!,
+				chatID: activeChatID!,
+			}
+		})
+		if (filteredUserChats[0]?._id) {
+			setActiveChatID(filteredUserChats[0]._id!)
+		}
+		setChatSettingsOpened(false)
+		setActiveChatMembers([])
+		setActiveChatMessages([])
+	}
 
 	useEffect(
 		() => {
@@ -269,6 +311,9 @@ export default function ChatSettingsDashboard({ activeChatName, sessionData }: {
 			}
 			{!chatMembersQueryResponse.loading &&
 				<div className="flex flex-col gap-2 max-w-[720px] w-full justify-center items-center">
+					<button className="btn btn-neutral flex justify-center items-center w-full text-error font-bold" onClick={onLeaveChat}>
+						{"Delete chat"}
+					</button>
 					<button className="btn btn-neutral flex justify-center items-center w-full" onClick={onRenameChat}>
 						{"Rename chat"}
 					</button>

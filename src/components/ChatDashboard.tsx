@@ -25,15 +25,6 @@ function CancelIcon() {
 	)
 }
 
-const leaveChatMutation = gql`
-mutation LeaveChat($username: String!, $chatID: String!) {
-	leaveChat(username: $username, chatID: $chatID) {
-		ok
-		message
-	}
-}
-`
-
 const messagesQuery = gql`
 query Messages($chatID: String!) {
 	messages(chatID: $chatID) {
@@ -92,20 +83,11 @@ subscription NewMessage($chatID: String!) {
 }
 `
 
-function LeaveIcon() {
-	return (
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-</svg>
-	)
-}
-
 export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 	const [needsScrollingIntoViewOfLastMessage, setNeedsScrollingIntoViewOfLastMessage] = useAtom(needsScrollingIntoViewOfLastMessageAtom)
 	const [chatSettingsOpened, setChatSettingsOpened] = useAtom(chatSettingsOpenedAtom)
 	const [activeChatID, setActiveChatID] = useAtom(activeChatIDAtom)
 	const [userChats, setUserChats] = useAtom(userChatsAtom)
-	const [leaveChat, leaveChatResponse] = useMutation(leaveChatMutation)
 	const messagesQueryResponse = useQuery(messagesQuery, {
 		variables: {
 			chatID: activeChatID,
@@ -273,35 +255,10 @@ export default function ChatDashboard({ sessionData }: PropsWithSessionData) {
 		setChatSettingsOpened(!chatSettingsOpened)
 	}
 
-	const onRenameChat = () => {
-		if (document) {
-			const validDocument = document as any
-			validDocument.getElementById('rename-chat-modal').showModal()
-		}
-	}
-
 	const onEditMessageCancel = () => {
 		setIndexOfMessageToEdit(undefined)
 		if (messageInputRef.current) {
 			(messageInputRef.current!).value = ''
-		}
-	}
-
-	const onLeaveChat = () => {
-		onSettingsClick()
-		if (!sessionData?.username || !activeChatID || !userChats) {
-			return;
-		}
-		const filteredUserChats = userChats.filter((chat) => chat._id !== activeChatID)
-		setUserChats(filteredUserChats)
-		leaveChat({
-			variables: {
-				username: sessionData.username!,
-				chatID: activeChatID!,
-			}
-		})
-		if (filteredUserChats[0]?._id) {
-			setActiveChatID(filteredUserChats[0]._id!)
 		}
 	}
 
