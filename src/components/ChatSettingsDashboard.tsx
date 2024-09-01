@@ -246,6 +246,13 @@ export default function ChatSettingsDashboard({ activeChatName, sessionData }: {
 		}, [setActiveChatMembers, chatMembersQueryResponse]
 	)
 
+	const onRenameChat = () => {
+		if (document) {
+			const validDocument = document as any
+			validDocument.getElementById('rename-chat-modal').showModal()
+		}
+	}
+
 	return (
 		<div className="flex flex-col items-center justify-between gap-4 w-full h-full">
 			{chatMembersQueryResponse.loading &&
@@ -262,6 +269,9 @@ export default function ChatSettingsDashboard({ activeChatName, sessionData }: {
 			}
 			{!chatMembersQueryResponse.loading &&
 				<div className="flex flex-col gap-2 max-w-[720px] w-full justify-center items-center">
+					<button className="btn btn-neutral flex justify-center items-center w-full" onClick={onRenameChat}>
+						{"Rename chat"}
+					</button>
 					<ChatMemberInput chatID={activeChatID!} />
 					{activeChatMembers && (activeChatMembers!).map(
 							(chatMember: ChatMemberData, index: number) => (
