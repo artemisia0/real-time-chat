@@ -1,5 +1,6 @@
 # real-time-chat website
-Here is a short video on how this web app looks like: ![LINK](https://www.youtube.com/watch?v=2Bm9fSFRFu4)
+**Here is a short video on how this web app looks like**
+[![Watch the video](https://img.youtube.com/vi/2Bm9fSFRFu4/maxresdefault.jpg)](https://youtu.be/2Bm9fSFRFu4)
 
 ## Features
 - user can sign in, sign up and sign out from his account
